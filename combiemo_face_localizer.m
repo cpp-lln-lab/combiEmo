@@ -84,7 +84,11 @@ frameDuration = 1/videoFrameRate - interFrameInterval/5;
 %minJitter=-0.25;
 %maxJitter=0.25;
 %jitterDistribution=create_jitter(minJitter,maxJitter);
-
+    cfg= struct;
+    cfg.keyboard.escapeKey = 'ESCAPE';
+    cfg.keyboard.responseKey = [];
+    cfg.keyboard.keyboard = [];
+    cfg.keyboard.responseBox = [];
 
 % get width and height of the screen
 screenVector = Screen('Screens');
@@ -239,11 +243,15 @@ Screen('FillRect', mainWindow, bgColor);
 [~, ~, lastEventTime] = Screen('Flip', mainWindow);
 
 % triggers
-cfg = struct;
-cfg.testingDevice = 'mri'; cfg.triggerKey = 's'; cfg.numTriggers = 1; cfg.win = mainWindow; cfg.text.color = textColor;
-cfg.bids.MRI.RepetitionTime = 2.55;
+trigger = struct;
+trigger.testingDevice = 'mri'; trigger.triggerKey = 's'; trigger.numTriggers = 1; trigger.win = mainWindow; trigger.text.color = textColor;
+trigger.bids.MRI.RepetitionTime = 2.55;
 
-waitForTrigger(cfg);
+waitForTrigger(trigger);
+
+% prepare the KbQueue to collect responses
+deviceNumber=-3;
+getResponse('init', deviceNumber, cfg);
 
 % Start stimuli presentation (this is several repetition, but only one acquisition sequence) %
 for rep=1:nReps
@@ -382,8 +390,11 @@ for rep=1:nReps
             for trial=1:nStim+a
 
                 % record any keypress or scanner trigger (flush previously queued ones) % 
-                KbQueue('flush');
-                KbQueue('start', {'s','c'});
+                %KbQueue('flush');
+                %KbQueue('start', {'s','a','b','c','d'});
+
+               getResponse('start', deviceNumber, cfg);
+               getResponse('check', deviceNumber, cfg);
                 
                 % frames presentation loop
                 for g = 1:nFrames
@@ -405,12 +416,16 @@ for rep=1:nReps
 
                 
                 %save timestamps to output file
-                pressCodeTime = KbQueue('stop', expStart);
-                howManyKeyInputs = size(pressCodeTime);                    
+                %pressCodeTime = KbQueue('stop', expStart);
+                %howManyKeyInputs = size(pressCodeTime);    
+
+                % write down buffered responses after waiting for response
+                responseEvents = getResponse('check', deviceNumber, cfg);
+                
                 dataFile = fopen(dataFileName, 'a');
-                for p = 1:howManyKeyInputs(2)
-                fprintf(dataFile, keypressFormatString, pressCodeTime(1,p), KbName(pressCodeTime(1,p)), pressCodeTime(2,p));
-                end
+%                 for p = 1:howManyKeyInputs(2)
+%                 fprintf(dataFile, keypressFormatString, pressCodeTime(1,p), KbName(pressCodeTime(1,p)), pressCodeTime(2,p));
+%                 end
                 fprintf(dataFile, formatString, rep, trial, num2str(pseudorandFacesBack(trial).emotion), num2str(pseudorandFacesBack(trial).actor), GetSecs-stimEnd, stimEnd-stimStart, stimStart-expStart); 
                 fclose(dataFile);
 
@@ -421,8 +436,12 @@ for rep=1:nReps
             for trial=1:nStim+w
 
             % start queuing for triggers and subject's keypresses (flush previous queue) %
-            KbQueue('flush');
-            KbQueue('start', {'s', 'd'});
+            %KbQueue('flush');
+            %KbQueue('start', {'s','a','b','c','d'});
+            getResponse('flush', deviceNumber, cfg);
+            getResponse('start', deviceNumber, cfg);
+            getResponse('check', deviceNumber, cfg);
+            
 
                 % frames presentation loop
                 for g = 1:nFrames
@@ -442,12 +461,13 @@ for rep=1:nReps
                 Screen('Flip', mainWindow, stimEnd+ISI);
                 
                 %save timestamps to output file
-                pressCodeTime = KbQueue('stop', expStart);
-                howManyKeyInputs = size(pressCodeTime);                    
+                responseEvents = getResponse('check', deviceNumber, cfg);
+                %pressCodeTime = KbQueue('stop', expStart);
+                %howManyKeyInputs = size(pressCodeTime);                    
                 dataFile = fopen(dataFileName, 'a');
-                for p = 1:howManyKeyInputs(2)
-                fprintf(dataFile, keypressFormatString, pressCodeTime(1,p), KbName(pressCodeTime(1,p)), pressCodeTime(2,p));
-                end
+%                 for p = 1:howManyKeyInputs(2)
+%                 fprintf(dataFile, keypressFormatString, pressCodeTime(1,p), KbName(pressCodeTime(1,p)), pressCodeTime(2,p));
+%                 end
                 fprintf(dataFile, formatString, rep, trial, '0', randObjectsBack(trial).stimulusname, GetSecs-stimEnd, stimEnd-stimStart, stimStart-expStart);
                 fclose(dataFile);
 
