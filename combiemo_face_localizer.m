@@ -80,15 +80,13 @@ practiceResponseDur = 5 - interFrameInterval/5;
 nFrames=30;
 videoFrameRate = 29.97;
 frameDuration = 1/videoFrameRate - interFrameInterval/5;
-% create a distribution to draw random jitters % No jitter needed atm
-%minJitter=-0.25;
-%maxJitter=0.25;
-%jitterDistribution=create_jitter(minJitter,maxJitter);
-    cfg= struct;
-    cfg.keyboard.escapeKey = 'ESCAPE';
-    cfg.keyboard.responseKey = [];
-    cfg.keyboard.keyboard = [];
-    cfg.keyboard.responseBox = [];
+
+% build structure needed for getResponse function
+cfg = struct;
+cfg.keyboard.escapeKey = 'ESCAPE';
+cfg.keyboard.responseKey = []; % leave this empty to cue for all keys %
+cfg.keyboard.keyboard = [];
+cfg.keyboard.responseBox = [];
 
 % get width and height of the screen
 screenVector = Screen('Screens');
@@ -250,7 +248,7 @@ trigger.bids.MRI.RepetitionTime = 2.55;
 waitForTrigger(trigger);
 
 % prepare the KbQueue to collect responses
-deviceNumber=-3;
+deviceNumber=-1; % deviceNumber must refer to external devices in an fMRI session %
 getResponse('init', deviceNumber, cfg);
 
 % Start stimuli presentation (this is several repetition, but only one acquisition sequence) %
@@ -392,9 +390,8 @@ for rep=1:nReps
                 % record any keypress or scanner trigger (flush previously queued ones) % 
                 %KbQueue('flush');
                 %KbQueue('start', {'s','a','b','c','d'});
-
+               getResponse('flush', deviceNumber, cfg);
                getResponse('start', deviceNumber, cfg);
-               getResponse('check', deviceNumber, cfg);
                 
                 % frames presentation loop
                 for g = 1:nFrames
@@ -440,7 +437,6 @@ for rep=1:nReps
             %KbQueue('start', {'s','a','b','c','d'});
             getResponse('flush', deviceNumber, cfg);
             getResponse('start', deviceNumber, cfg);
-            getResponse('check', deviceNumber, cfg);
             
 
                 % frames presentation loop
