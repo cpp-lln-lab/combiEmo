@@ -1,11 +1,7 @@
-function [answer] = waitForKb(targetKey, deviceNumber)
+function [answer] = waitForKb(targetKey)
 
 % Waits for a specific Keyboard press
 
-
-if isempty(deviceNumber)
-    deviceNumber=-3;
-end
     
 % Wait until all keys are released
 while KbCheck
@@ -15,7 +11,7 @@ answer = -1;
 
 while 1
     % Check the state of the keyboard.
-	[keyIsDown, KbTime, keyCode] = KbCheck(deviceNumber);
+	[keyIsDown, KbTime, keyCode] = KbCheck;
    
     % If the subject is pressing a key
     % check whether it is the space button
