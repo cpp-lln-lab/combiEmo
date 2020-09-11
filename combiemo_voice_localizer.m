@@ -104,7 +104,7 @@ stimEmotion = repmat(1:5,1,4);
 stimActor = [repmat(27,1,5),repmat(30,1,5),repmat(32,1,5),repmat(33,1,5)];
 blockTypeVoices = 1; % 1 for voices, 2 for objects
 
-stimNameObjects = {'waterpour.wav','carignition.wav','mixing.wav','egg.wav','bikebell.wav','applause.wav','engine.wav','grinder.wav','sharpener.wav','opencan.wav','churchbell.wav','hairdryer.wav','keyboard.wav','phone.wav','river.wav','saw.wav','thunder.wav','toothbrush.wav','traffic.wav','wind.wav'};
+stimNameObjects = {'waterpour.wav','cuttingscissor.wav','mixing.wav','egg.wav','bikebell.wav','applause.wav','engine.wav','grinder.wav','sharpener.wav','opencan.wav','churchbell.wav','hairdryer.wav','keyboard.wav','phone.wav','river.wav','saw.wav','thunder.wav','toothbrush.wav','traffic.wav','wind.wav'};
 blockTypeObjects = 2;
 
 
@@ -115,7 +115,7 @@ nStim = 20; %per block
 voices = struct;
 for v=1:nStim
     voices(v).stimulusname = stimNameVoices{v};
-    [voices(v).y, voices(v).freq] = audioread([cd '/auditory_stim/' voices(v).stimulusname]);
+    [voices(v).y, voices(v).freq] = audioread([cd '/auditory_stim/rms_' voices(v).stimulusname]);
     voices(v).wavedata = voices(v).y';
     voices(v).nrchannels = size(voices(v).wavedata,1);
     voices(v).emotion = stimEmotion(v);
@@ -126,7 +126,7 @@ end
 objects = struct;
 for o=1:nStim
     objects(o).stimulusname = stimNameObjects{o};
-    [objects(o).y, objects(o).freq] = audioread([cd '/auditory_stim/' objects(o).stimulusname]);
+    [objects(o).y, objects(o).freq] = audioread([cd '/auditory_stim/rms_' objects(o).stimulusname]);
     objects(o).wavedata = objects(o).y';
     objects(o).nrchannels = size(objects(o).wavedata,1);
     objects(o).blocktype = blockTypeObjects;

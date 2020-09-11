@@ -114,8 +114,13 @@ RandStream.setGlobalStream (RandStream('mt19937ar','seed',sum(100*clock)));
 HideCursor(mainWindow);
 % Listening enabled and any output of keypresses to Matlabs windows is
 % suppressed (see ref. page for ListenChar)
-ListenChar(2);
+ListenChar(-1);
 KbName('UnifyKeyNames');
+
+% prepare the KbQueue to collect responses
+[id, names, info] = GetKeyboardIndices();
+deviceNumber=max(id); % deviceNumber must refer to external devices in an fMRI session %
+KbQueueCreate(deviceNumber);
 
         % FIXATION CROSS JAZZ %
         % estimate the distance between subject and monitor, in cm
@@ -216,7 +221,7 @@ myExpTrials = struct;
 for t = 1:length(stimName)
         myExpTrials(t).stimulusname = stimName{t};
         myExpTrials(t).visualstimuli = myFacesStructArray{t};
-        [myExpTrials(t).audy, myExpTrials(t).audfreq] = audioread([cd '/auditory_stim/A' myExpTrials(t).stimulusname '.wav']);
+        [myExpTrials(t).audy, myExpTrials(t).audfreq] = audioread([cd '/auditory_stim/rms_A' myExpTrials(t).stimulusname '.wav']);
         myExpTrials(t).wavedata = myExpTrials(t).audy';
         myExpTrials(t).nrchannels = size(myExpTrials(t).wavedata,1);
         myExpTrials(t).emotion = stimEmotion(t);
@@ -224,7 +229,7 @@ for t = 1:length(stimName)
 end
 
 % black image for audio-only presentation
-blackImage = Screen('MakeTexture', mainWindow ,imread([cd '/visual_stim/black_img.pngblack_img.png']));
+blackImage = Screen('MakeTexture', mainWindow ,imread([cd '/visual_stim/black_img.png']));
 
 %% Insert the task stimuli as extra trials
 % vector with block numbers
@@ -256,16 +261,17 @@ oneBackStimBlocksPerson = datasample(remainingBlocksPerson,round(length(allBlock
 zeroBackStimBlocksPerson = setdiff(remainingBlocksPerson,oneBackStimBlocksPerson);
 
 
-% triggers
-cfg = struct;
-cfg.testingDevice = 'mri'; cfg.triggerKey = 's'; cfg.numTriggers = 1; cfg.win = mainWindow; cfg.text.color = textColor;
-cfg.bids.MRI.RepetitionTime = 2.55;
 
 %% BLOCK AND TRIAL LOOP
 % for sound to be used: perform basic initialization of the sound driver
 InitializePsychSound(1);
 % priority
 Priority(MaxPriority(mainWindow));
+
+% triggers
+trigger = struct;
+trigger.testingDevice = 'mri'; trigger.triggerKey = 's'; trigger.numTriggers = 1; trigger.win = mainWindow; trigger.text.color = textColor;
+trigger.bids.MRI.RepetitionTime = 2.55;
 
 % Repetition loop
 for rep = 1:nReps  
@@ -330,7 +336,7 @@ for rep = 1:nReps
             dataFileName = [cd '/data/subj' num2str(subjNumber) '_' expName '_' num2str(rep) '_' num2str(block) '.txt'];
 
             % format for the output od the data %
-            formatString = '%d, %d, %d, %d, %d, %d, %1.3f, %1.3f, %1.3f \n'; 
+            formatString = '%d, %d, %d, %d, %d, %d, %1.3f, %1.3f, %1.3f, \n'; 
             keypressFormatString = '%d, %s, %1.3f, \n';
 
             % open a file for reading AND writing
@@ -412,39 +418,17 @@ for rep = 1:nReps
                 end
              end
         
-        % Each Block is for the scanner a new run so the first 3 volumes get discarded each time %
-        % trigger
-        %waitForTrigger(cfg, -1);
-        triggerCounter = 0;
-            while triggerCounter < cfg.numTriggers
-
-            keyCode = []; 
-
-            [~, keyCode] = KbPressWait;
-
-            if strcmp(KbName(keyCode), 's')
-
-                triggerCounter = triggerCounter + 1 ;
-
-                % msg = sprintf(' Trigger %i', triggerCounter);
-                msg = ['The session will start in',...
-                    num2str(cfg.numTriggers-triggerCounter),'...'];
-
-%                 talkToMe(cfg, msg);
-
-%                 % we only wait if this is not the last trigger
-%                 if triggerCounter < cfg.numTriggers
-%                     pauseBetweenTriggers(cfg);
-%                 end
-
-            end
-            end
+            % 1 trigger
+            waitForTrigger(trigger);
 
         for trial = 1:(nTrials+r)
             
+
+            
             % start queuing for triggers and subject's keypresses (flush previous queue) %
-            KbQueue('flush');
-            KbQueue('start', {'s', 'd'});
+               % record any keypress or scanner trigger (flush previously queued ones) % 
+               KbQueueFlush(deviceNumber);         
+               KbQueueStart(deviceNumber);
     
             % which kind of block is it? Stimulus presentation changes based on modality %
             
@@ -607,22 +591,28 @@ for rep = 1:nReps
             
                     % SAVE DATA TO THE OUTPUT FILE % header 'rep, block, modality, trial, actor, emotion, stimlus duration'    
                     %save timestamps to output file
-                    % write keypresses and timestamps on its file   
-                    pressCodeTime = KbQueue('stop', expStart);
-                    howManyKeyInputs = size(pressCodeTime);                    
+                    % write keypresses and timestamps on its file
+                    [pressed, firstPress, firstRelease, lastPress, lastRelease] = KbQueueCheck(deviceNumber);
+                    whichKeys = KbName(find(firstPress));
+                    howManyKeyInputs = length(whichKeys);
+                    % open output file to append
                     dataFile = fopen(dataFileName, 'a');
-                    for p = 1:howManyKeyInputs(2)
-                    fprintf(dataFile, keypressFormatString, pressCodeTime(1,p), KbName(pressCodeTime(1,p)), pressCodeTime(2,p));
-                    end
+                    % print keypresses to outputfile
+                     for p = 1:howManyKeyInputs
+                     fprintf(dataFile, keypressFormatString, KbName(whichKeys(p)), (firstPress(KbName(whichKeys(p)))-expStart));
+                     end
                     fprintf(dataFile, formatString, rep, block, blockModality, trial,  pseudoRandExpTrialsBack(trial).actor, pseudoRandExpTrialsBack(trial).emotion, stimEnd-stimStart, ISIend-stimEnd, GetSecs);
                     fclose(dataFile);
                 
 
         end
 
+        DrawFormattedText(mainWindow, 'press space to go on', 'center', 'center', textColor);
+        Screen('Flip', mainWindow);
+        waitForKb('space');
     end
     
-    waitForKb('space');
+    
     
 end
 
