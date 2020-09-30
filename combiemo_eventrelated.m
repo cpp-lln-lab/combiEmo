@@ -12,7 +12,7 @@
 % EMOTIONS: disgust, fear, happiness, sadness, neutral %
 % identities: act27 female, act30 female, act32 lae, act33, male %
 
-expName = 'eventrelated_combiemo';
+expName = 'eventrelatedCombiemo';
 
 %%% All useful variables/parameters %%%
 
@@ -44,6 +44,7 @@ stimYsize = 480;
 subjNumber = input('Subject number:');
 subjAge = input('Age:');
 nReps = input('Number of repetitions:');
+nSes = input('Session nr:', 's');
 % if no value is supplied, do 12 reps
 if isempty(nReps)
     nReps=12;
@@ -82,7 +83,7 @@ screenVector = Screen('Screens');
 % OpenWindow
 %[mainWindow, screenRect] = Screen('OpenWindow', max(screenVector), bgColor, [0 0 1000 700], 32, 2);
 [mainWindow, screenRect] = Screen('OpenWindow', max(screenVector), bgColor, [], 32, 2);
-%[mainWindow, screenRect] = Screen('OpenWindow', 0, bgColor, [], 32, 2);
+%[mainWindow, screenRect] = Screen('OpenWindow', 0, bgColor, [0 0 700 500], 32, 2);
 %[mainWindow, screenRect] = Screen('OpenWindow', 0, bgColor);
 
 % estimate the monitor flip interval for the onscreen window
@@ -90,7 +91,7 @@ interFrameInterval = Screen('GetFlipInterval', mainWindow); % in seconds
 msInterFrameInterval = interFrameInterval*1000; %in ms
 
 % timings in my trial sequence
-ISI = 3 - interFrameInterval/3;
+ISI = 4 - interFrameInterval/3; % actually full event duration
 fixationDur = 0.5 - interFrameInterval/3;
 responseDur = 4 - interFrameInterval/3;
 practiceResponseDur = 5 - interFrameInterval/3;
@@ -271,10 +272,15 @@ Priority(MaxPriority(mainWindow));
 % triggers
 trigger = struct;
 trigger.testingDevice = 'mri'; trigger.triggerKey = 's'; trigger.numTriggers = 1; trigger.win = mainWindow; trigger.text.color = textColor;
-trigger.bids.MRI.RepetitionTime = 2.55;
+trigger.bids.MRI.RepetitionTime = 2.6;
+
+% time stamp as the experiment starts
+expStart = GetSecs;
 
 % Repetition loop
 for rep = 1:nReps  
+    
+  
     
 %     % check on participant every 3 blocks
 %     if rep > 1
@@ -331,27 +337,45 @@ for rep = 1:nReps
         backTrials = backTrialsPerson;
     end
     
+      repStart = GetSecs;
     
             % Set up output file for current run (1 BLOCK = 1 ACQUISITION RUN) % 
-            dataFileName = [cd '/data/subj' num2str(subjNumber) '_' expName '_' num2str(rep) '_' num2str(block) '.txt'];
-
+            %dataFileName = [cd '/data/sub-' num2str(subjNumber) '_ses-' num2str(nSes) '_task-' expName '_run-' num2str(rep) num2str(block) '_allevents.txt'];
+            dataFileNameBIDS = [cd '/data/sub-' num2str(subjNumber) '_ses-' num2str(nSes) '_task-' expName '_run-' num2str(rep) num2str(block) '_events.txt'];
+            
+            
             % format for the output od the data %
             formatString = '%d, %d, %d, %d, %d, %d, %1.3f, %1.3f, %1.3f, \n'; 
             keypressFormatString = '%d, %s, %1.3f, \n';
+            formatStringBIDS = '%1.3f, %1.3f, %d, %s, \n';
 
-            % open a file for reading AND writing
+%             % open a file for reading AND writing
+%             % permission 'a' appends data without deleting potential existing content
+%             if exist(dataFileName, 'file') == 0
+%                 dataFile = fopen(dataFileName, 'a');
+%                 % header
+%                 fprintf(dataFile, ['Experiment:\t' expName '\n']);
+%                 fprintf(dataFile, ['date:\t' datestr(now) '\n']);
+%                 fprintf(dataFile, ['Subject:\t' subjNumber '\n']);
+%                 fprintf(dataFile, ['Age:\t' num2str(subjAge) '\n']);
+%                 % data header
+%                 fprintf(dataFile, '%s \n', 'repetition, block, modality, trial, actor, emotion, stimulus duration, ISI, timestamp'); 
+%                 fclose(dataFile);
+% 
+%             end
+            
+            % open files for reading AND writing
             % permission 'a' appends data without deleting potential existing content
-            if exist(dataFileName, 'file') == 0
-                dataFile = fopen(dataFileName, 'a');
+            if exist(dataFileNameBIDS, 'file') == 0
+                dataFile = fopen(dataFileNameBIDS, 'a');
                 % header
                 fprintf(dataFile, ['Experiment:\t' expName '\n']);
                 fprintf(dataFile, ['date:\t' datestr(now) '\n']);
-                fprintf(dataFile, ['Subject:\t' subjNumber '\n']);
+                fprintf(dataFile, ['Subject:\t' num2str(subjNumber) '\n']);
                 fprintf(dataFile, ['Age:\t' num2str(subjAge) '\n']);
-                % data header
-                fprintf(dataFile, '%s \n', 'repetition, block, modality, trial, actor, emotion, stimulus duration, ISI, timestamp'); 
+                % header for the data
+                fprintf(dataFile, '%s \n', 'onset, duration, trial_type, stim_name');
                 fclose(dataFile);
-
             end
     
         % Pseudorandomization made based on emotion vector for the faces
@@ -458,9 +482,9 @@ for rep = 1:nReps
                 Screen('FillRect', mainWindow, bgColor);
                 [~, ~, lastEventTime] = Screen('Flip', mainWindow, lastEventTime+frameDuration);
                 
-                stimEnd = GetSecs;
-                Screen('Flip', mainWindow, stimEnd+ISI);
-                [~, ~, ISIend] = Screen('Flip', mainWindow, stimEnd+ISI);
+                %Screen('Flip', mainWindow, stimEnd+ISI);
+                [~, ~, stimEnd] = Screen('Flip', mainWindow);
+                [~, ~, ISIend] = Screen('Flip', mainWindow, stimEnd+(ISI-(stimEnd-stimStart)));
 
             %% auditory    
             elseif blockModality == auditoryModality
@@ -470,7 +494,8 @@ for rep = 1:nReps
                     DrawFormattedText(mainWindow, 'Pay attention to the voices', 'center', 'center', textColor);
                     Screen('Flip', mainWindow);
                     WaitSecs(0.5);
-                    % clear instructions from screen
+                    % clear instructions from screen + fixation cross                    
+                    DrawFormattedText(mainWindow, '+', 'center', 'center', textColor);
                     Screen('FillRect', mainWindow, bgColor);
                     [~, ~, lastEventTime] = Screen('Flip', mainWindow);
                end
@@ -524,7 +549,7 @@ for rep = 1:nReps
             
             % clear stimulus from screen
             [~, ~, stimEnd] = Screen('Flip', mainWindow);
-            [~, ~, ISIend] = Screen('Flip', mainWindow, stimEnd+ISI);
+            [~, ~, ISIend] = Screen('Flip', mainWindow, stimEnd+(ISI-(stimEnd-stimStart)));
 
         
             %% bimodal
@@ -585,33 +610,47 @@ for rep = 1:nReps
             % flip screen and ISI
             % clear stimulus from screen
             [~, ~, stimEnd] = Screen('Flip', mainWindow);
-            [~, ~, ISIend] = Screen('Flip', mainWindow, stimEnd+ISI);
+            [~, ~, ISIend] = Screen('Flip', mainWindow, stimEnd+(ISI-(stimEnd-stimStart)));
                     
             end
             
                     % SAVE DATA TO THE OUTPUT FILE % header 'rep, block, modality, trial, actor, emotion, stimlus duration'    
                     %save timestamps to output file
                     % write keypresses and timestamps on its file
+                    % find cued keypresses and then save them to putput
                     [pressed, firstPress, firstRelease, lastPress, lastRelease] = KbQueueCheck(deviceNumber);
                     whichKeys = KbName(find(firstPress));
                     howManyKeyInputs = length(whichKeys);
                     % open output file to append
-                    dataFile = fopen(dataFileName, 'a');
+                    dataFile = fopen(dataFileNameBIDS, 'a');
                     % print keypresses to outputfile
-                     for p = 1:howManyKeyInputs
-                     fprintf(dataFile, keypressFormatString, KbName(whichKeys(p)), (firstPress(KbName(whichKeys(p)))-expStart));
-                     end
-                    fprintf(dataFile, formatString, rep, block, blockModality, trial,  pseudoRandExpTrialsBack(trial).actor, pseudoRandExpTrialsBack(trial).emotion, stimEnd-stimStart, ISIend-stimEnd, GetSecs);
+                    for p = 1:howManyKeyInputs
+                        fprintf(dataFile, formatStringBIDS, (firstPress(KbName(whichKeys(p)))-expStart), 0, KbName(KbName(whichKeys(p))), 'press');
+                    end
+                    whichKeys = KbName(find(lastPress));
+                    howManyKeyInputs = length(whichKeys);
+                    % print keypresses to outputfile
+                    for p = 1:howManyKeyInputs
+                        fprintf(dataFile, formatStringBIDS, (lastPress(KbName(whichKeys(p)))-expStart), 0, KbName(KbName(whichKeys(p))), 'press');
+                    end
+                    % print stimulus info to outputfile
+                    fprintf(dataFile, formatStringBIDS, stimStart-expStart, stimEnd-stimStart, blockModality, pseudoRandExpTrialsBack(trial).stimulusname);
                     fclose(dataFile);
                 
 
         end
 
+            repEnd = GetSecs;
+            repDuration = (repEnd - repStart)
+        
+        
         DrawFormattedText(mainWindow, 'press space to go on', 'center', 'center', textColor);
         Screen('Flip', mainWindow);
         waitForKb('space');
-    end
+        
+
     
+    end
     
     
 end

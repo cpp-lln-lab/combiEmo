@@ -1,8 +1,8 @@
 %%% Face Localizer for the CombiEmo Exp %%%
 % programmer: Federica Falagiarda 2020
 
-expName = 'face_localizer_combiemo';
-expStart = GetSecs;
+expName = 'facelocalizerCombiemo';
+%expStart = GetSecs;
 
 %%% some useful variables/parameters %%%
 % background color and fixation color
@@ -15,6 +15,7 @@ textColor = white;
 subjNumber = input('Subject number:'); % subject number
 subjAge = input('Age:'); % age
 nReps = input('Number of repetitions:'); % number or reps of this localizer, ideally 10+ %
+nSes = input('Session nr:', 's');
 
 if isempty(nReps)
     nReps=10;
@@ -24,12 +25,14 @@ end
 addpath(genpath('./supporting_functions'));
 
 %%% SET UP OUTPUT FILES %%%
-dataFileName = [cd '/data/subj' num2str(subjNumber) '_' expName '.txt'];
-keypressFileName = ['subj' num2str(subjNumber) '_' expName '_keypress.txt'];
+dataFileName = [cd '/data/sub-' num2str(subjNumber) '_ses-' num2str(nSes) '_task-' expName '_allevents.txt'];
+dataFileNameBIDS = [cd '/data/sub-' num2str(subjNumber) '_ses-' num2str(nSes) '_task-' expName '_events.txt'];
+
 % format for the output od the data %
 formatString = '%d, %d, %s, %1.3f, %1.3f, %1.3f, \n';
+formatStringBIDS = '%1.3f, %1.3f, %s, \n';
 keypressFormatString = '%d, %1.3f, \n';
-baselineFormatString = '%d, %1.3f, \n';
+baselineFormatString = '%s, %1.3f, \n';
 
 % open files for reading AND writing
 % permission 'a' appends data without deleting potential existing content
@@ -43,9 +46,20 @@ if exist(dataFileName, 'file') == 0
     % header for the data
     fprintf(dataFile, '%s \n', 'block, trial, stimulusname, ISIduration, stimduration, timestamp'); 
     fclose(dataFile);
-   
 end
-
+% open files for reading AND writing
+% permission 'a' appends data without deleting potential existing content
+if exist(dataFileNameBIDS, 'file') == 0
+    dataFile = fopen(dataFileNameBIDS, 'a');        
+    % header
+    fprintf(dataFile, ['Experiment:\t' expName '\n']);
+    fprintf(dataFile, ['date:\t' datestr(now) '\n']);
+    fprintf(dataFile, ['Subject:\t' num2str(subjNumber) '\n']);
+    fprintf(dataFile, ['Age:\t' num2str(subjAge) '\n']);    
+    % header for the data
+    fprintf(dataFile, '%s \n', 'onset, duration, trial_type'); 
+    fclose(dataFile);
+end
 
 %%% INITIALIZE SCREEN AND START THE STIMULI PRESENTATION %%%
 
@@ -240,6 +254,7 @@ zeroBackStimBlocksObjects = setdiff(remainingBlocksObjects,oneBackStimBlocksObje
 %% Stimuli presentation code
 Screen('FillRect', mainWindow, bgColor);
 [~, ~, lastEventTime] = Screen('Flip', mainWindow);
+trial_type=struct('type',{'faces','objects','baseline'});
 
 % triggers
 trigger = struct;
@@ -253,6 +268,9 @@ waitForTrigger(trigger);
 deviceNumber=max(id); % deviceNumber must refer to external devices in an fMRI session %
 KbQueueCreate(deviceNumber);
 
+% measure exp start right after trigger
+expStart = GetSecs;
+
 % Start stimuli presentation (this is several repetition, but only one acquisition sequence) %
 for rep=1:nReps
     
@@ -262,10 +280,13 @@ for rep=1:nReps
     
     % acquire some base line
     if rep == 1 || rep==(nReps/2+1)
-           dataFile = fopen(dataFileName, 'a');
-           fprintf(dataFile, baselineFormatString, 'baseline' ,GetSecs-expStart);
-           fclose(dataFile);
-           WaitSecs(10);
+        dataFile = fopen(dataFileName, 'a');
+        fprintf(dataFile, baselineFormatString, 'baseline' ,GetSecs-expStart);
+        fclose(dataFile);
+        dataFile = fopen(dataFileNameBIDS, 'a');
+        fprintf(dataFile, formatStringBIDS, GetSecs-expStart, 10, 'baseline');
+        fclose(dataFile);
+        WaitSecs(10);
     end
         
 %     % fourth trigger of the first rep
@@ -386,12 +407,15 @@ for rep=1:nReps
      end
     
     
-            % trial loop for faces blocks 
-            for trial=1:nStim+a
+        % FACES
+        faceBlockStart=GetSecs;
 
-               % record any keypress or scanner trigger (flush previously queued ones) % 
-               KbQueueFlush(deviceNumber);         
-               KbQueueStart(deviceNumber);
+        % record any keypress or scanner trigger (flush previously queued ones) %
+        KbQueueFlush(deviceNumber);
+        KbQueueStart(deviceNumber);
+               
+            %trial loop for faces blocks   
+            for trial=1:nStim+a
                 
                 % frames presentation loop
                 for g = 1:nFrames
@@ -406,35 +430,53 @@ for rep=1:nReps
 
                 % clear last frame                
                 Screen('FillRect', mainWindow, bgColor);
-                [~, ~, lastEventTime] = Screen('Flip', mainWindow, lastEventTime+frameDuration);
-                
+                [~, ~, lastEventTime] = Screen('Flip', mainWindow, lastEventTime+frameDuration);                
                 stimEnd = GetSecs;
                 Screen('Flip', mainWindow, stimEnd+ISI);
-
                 
-                % find cued keypresses and then save them to putput
-                [pressed, firstPress, firstRelease, lastPress, lastRelease] = KbQueueCheck(deviceNumber);
-                whichKeys = KbName(find(firstPress));
-                howManyKeyInputs = length(whichKeys);
-                % open output file to append
-                dataFile = fopen(dataFileName, 'a');
-                % print keypresses to outputfile
-                 for p = 1:howManyKeyInputs
-                 fprintf(dataFile, keypressFormatString, KbName(whichKeys(p)), (firstPress(KbName(whichKeys(p)))-expStart));
-                 end
-                % print stimulus info to outputfile
-                fprintf(dataFile, formatString, rep, trial, pseudorandFacesBack(trial).stimulusname, GetSecs-stimEnd, stimEnd-stimStart, stimStart-expStart); 
-                fclose(dataFile);
+                
+        
+        % print stimulus info to outputfile
+        dataFile = fopen(dataFileName, 'a');
+        fprintf(dataFile, formatString, rep, trial, pseudorandFacesBack(trial).stimulusname, GetSecs-stimEnd, stimEnd-stimStart, stimStart-expStart);
+        fclose(dataFile);
 
             end
+        
+        %end of the block timestamp
+        faceBlockEnd = GetSecs;
+            
+        % find cued keypresses and then save them to putput
+        [pressed, firstPress, firstRelease, lastPress, lastRelease] = KbQueueCheck(deviceNumber);
+        whichKeys = KbName(find(firstPress));
+        howManyKeyInputs = length(whichKeys);
+        % open output file to append
+        dataFile = fopen(dataFileNameBIDS, 'a');
+        % print keypresses to outputfile
+        for p = 1:howManyKeyInputs
+        fprintf(dataFile, formatStringBIDS, (firstPress(KbName(whichKeys(p)))-expStart), 0, KbName(KbName(whichKeys(p))));
+        end
+        whichKeys = KbName(find(lastPress));
+        howManyKeyInputs = length(whichKeys);
+        % print keypresses to outputfile
+        for p = 1:howManyKeyInputs
+        fprintf(dataFile, formatStringBIDS, (lastPress(KbName(whichKeys(p)))-expStart), 0, KbName(KbName(whichKeys(p))));
+        end
+        % print stimulus info to outputfile
+        fprintf(dataFile, formatStringBIDS, faceBlockStart-expStart, faceBlockEnd-faceBlockStart, trial_type(1).type);
+        fclose(dataFile);
 
+        
+        % OBJECTS                           
+        objectBlockStart=GetSecs;
+        
+        % record any keypress or scanner trigger (flush previously queued ones) %
+        KbQueueFlush(deviceNumber);
+        KbQueueStart(deviceNumber);
+        
 
-            % trial loop for faces blocks 
-            for trial=1:nStim+w
-                
-               % record any keypress or scanner trigger (flush previously queued ones) % 
-               KbQueueFlush(deviceNumber);         
-               KbQueueStart(deviceNumber);
+            % trial loop for object blocks 
+            for trial=1:nStim+w        
 
             
                 % frames presentation loop
@@ -452,38 +494,58 @@ for rep=1:nReps
                 Screen('FillRect', mainWindow, bgColor);
                 [~, ~, lastEventTime] = Screen('Flip', mainWindow, lastEventTime+frameDuration);
                 stimEnd = GetSecs;
-                Screen('Flip', mainWindow, stimEnd+ISI);
-                
-                % write down buffered responses after waiting for response
-                [pressed, firstPress, firstRelease, lastPress, lastRelease] = KbQueueCheck(deviceNumber);
-                whichKeys = KbName(find(firstPress));
-                howManyKeyInputs = length(whichKeys); 
+                Screen('Flip', mainWindow, stimEnd+ISI);              
                 
                 
-                dataFile = fopen(dataFileName, 'a');
-                % print keypresses to outputfile
-                 for p = 1:howManyKeyInputs
-                 fprintf(dataFile, keypressFormatString, KbName(whichKeys(p)), (firstPress(KbName(whichKeys(p)))-expStart));
-                 end
-                 % print stimulus info to outputfile
-                fprintf(dataFile, formatString, rep, trial, randObjectsBack(trial).stimulusname, GetSecs-stimEnd, stimEnd-stimStart, stimStart-expStart);
-                fclose(dataFile);
+        % print stimulus info to outputfile
+        dataFile = fopen(dataFileName, 'a');
+        fprintf(dataFile, formatString, rep, trial, randObjectsBack(trial).stimulusname, GetSecs-stimEnd, stimEnd-stimStart, stimStart-expStart);
+        fclose(dataFile);
 
             end    
             
+        %end of the block timestamp
+        objectBlockEnd = GetSecs;
+            
+        % find cued keypresses and then save them to putput
+        [pressed, firstPress, firstRelease, lastPress, lastRelease] = KbQueueCheck(deviceNumber);
+        whichKeys = KbName(find(firstPress));
+        howManyKeyInputs = length(whichKeys);
+        % open output file to append
+        dataFile = fopen(dataFileNameBIDS, 'a');
+        % print keypresses to outputfile
+        for p = 1:howManyKeyInputs
+        fprintf(dataFile, formatStringBIDS, (firstPress(KbName(whichKeys(p)))-expStart), 0, KbName(KbName(whichKeys(p))));
+        end
+        whichKeys = KbName(find(lastPress));
+        howManyKeyInputs = length(whichKeys);
+        % print keypresses to outputfile
+        for p = 1:howManyKeyInputs
+        fprintf(dataFile, formatStringBIDS, (lastPress(KbName(whichKeys(p)))-expStart), 0, KbName(KbName(whichKeys(p))));
+        end
+        % print stimulus info to outputfile
+        fprintf(dataFile, formatStringBIDS, objectBlockStart-expStart, objectBlockEnd-objectBlockStart, trial_type(2).type);
+        fclose(dataFile);
+         
             % more baseline
+            Screen('FillRect', mainWindow, bgColor);
+            DrawFormattedText(mainWindow, '+', 'center', 'center', textColor);
+            [~, ~, lastEventTime] = Screen('Flip', mainWindow);
             if rep == nReps
                 dataFile = fopen(dataFileName, 'a');
                 fprintf(dataFile, baselineFormatString, 'baseline',GetSecs-expStart);
+                fclose(dataFile);
+                dataFile = fopen(dataFileNameBIDS, 'a');
+                fprintf(dataFile, formatStringBIDS, GetSecs-expStart, 10, trial_type(3).type);
                 fclose(dataFile);
                 WaitSecs(10);
             end
 end
 
 % End of experiment + goodbye messages and duration display
+expEnd = GetSecs;
 DrawFormattedText(mainWindow, 'end of localizer :)', 'center', 'center', textColor);
 Screen('Flip', mainWindow);
-expEnd = GetSecs;
 waitForKb('space');
 disp('Face localizer duration:')
 disp((expEnd-expStart)/60);
