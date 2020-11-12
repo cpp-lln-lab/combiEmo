@@ -25,14 +25,14 @@ end
 addpath(genpath('./supporting_functions'));
 
 %%% SET UP OUTPUT FILES %%%
-dataFileName = [cd '/data/sub-' num2str(subjNumber) '_ses-' num2str(nSes) '_task-' expName '_allevents.txt'];
-dataFileNameBIDS = [cd '/data/sub-' num2str(subjNumber) '_ses-' num2str(nSes) '_task-' expName '_events.txt'];
+dataFileName = [cd '/data/sub-' num2str(subjNumber) '_ses-' num2str(nSes) '_task-' expName '_allevents.tsv'];
+dataFileNameBIDS = [cd '/data/sub-' num2str(subjNumber) '_ses-' num2str(nSes) '_task-' expName '_events.tsv'];
 
 % format for the output od the data %
-formatString = '%d, %d, %s, %1.3f, %1.3f, %1.3f, \n';
-formatStringBIDS = '%1.3f, %1.3f, %s, \n';
-keypressFormatString = '%d, %1.3f, \n';
-baselineFormatString = '%s, %1.3f, \n';
+formatString = '%d, %d, %s, %1.3f, %1.3f, %1.3f \n';
+formatStringBIDS = '%1.3f, %1.3f, %s \n';
+keypressFormatString = '%d, %1.3f \n';
+baselineFormatString = '%s, %1.3f \n';
 
 % open files for reading AND writing
 % permission 'a' appends data without deleting potential existing content
