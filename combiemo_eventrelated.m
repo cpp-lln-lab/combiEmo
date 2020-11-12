@@ -16,9 +16,6 @@ expName = 'eventrelatedCombiemo';
 
 %%% All useful variables/parameters %%%
 
-% time stamp as the experiment starts
-expStart = GetSecs;
-
 % colors
 white = 255;
 black = 0;
@@ -41,13 +38,13 @@ stimYsize = 480;
 
 
 % input info
-subjNumber = input('Subject number:');
+subjNumber = input('Subject number:', 's');
 subjAge = input('Age:');
 nReps = input('Number of repetitions:');
 nSes = input('Session nr:', 's');
 % if no value is supplied, do 12 reps
 if isempty(nReps)
-    nReps=12;
+    nReps=10;
 end
 
 % this defines the modality block order within a subject
@@ -77,7 +74,7 @@ Screen('Preference', 'SkipSyncTests', 0);
 Screen('Preference', 'ConserveVRAM', 4096);
 
 % define default font size for all text uses (i.e. DrawFormattedText fuction)
-Screen('Preference', 'DefaultFontSize', 28);
+Screen('Preference', 'DefaultFontSize', 32);
 
 screenVector = Screen('Screens');
 % OpenWindow
@@ -151,12 +148,6 @@ KbQueueCreate(deviceNumber);
         stimDegDistance = 6;
         stimPixDistance = round(stimDegDistance * deg2pixCoeff);
         
-
-        
-%% Instructions text %%
-
-generalInstructions1 = 'Press the button when you perceive a repeated emotion.';
-
 
 %% CREATING THE VISUAL STIMULI
 
@@ -272,7 +263,7 @@ Priority(MaxPriority(mainWindow));
 % triggers
 trigger = struct;
 trigger.testingDevice = 'mri'; trigger.triggerKey = 's'; trigger.numTriggers = 1; trigger.win = mainWindow; trigger.text.color = textColor;
-trigger.bids.MRI.RepetitionTime = 2.6;
+trigger.bids.MRI.RepetitionTime = 1.75;
 
 % time stamp as the experiment starts
 expStart = GetSecs;
@@ -340,14 +331,15 @@ for rep = 1:nReps
       repStart = GetSecs;
     
             % Set up output file for current run (1 BLOCK = 1 ACQUISITION RUN) % 
-            %dataFileName = [cd '/data/sub-' num2str(subjNumber) '_ses-' num2str(nSes) '_task-' expName '_run-' num2str(rep) num2str(block) '_allevents.txt'];
-            dataFileNameBIDS = [cd '/data/sub-' num2str(subjNumber) '_ses-' num2str(nSes) '_task-' expName '_run-' num2str(rep) num2str(block) '_events.txt'];
+            %dataFileName = [cd '/data/sub-' num2str(subjNumber) '_ses-' num2str(nSes) '_task-' expName '_run-' num2str(rep) num2str(block) '_allevents.tsv'];
+            dataFileNameBIDS = [cd '/data/sub-' num2str(subjNumber) '_ses-' num2str(nSes) '_task-' expName '_run-' num2str(rep) num2str(block) '_events.tsv'];
             
             
             % format for the output od the data %
-            formatString = '%d, %d, %d, %d, %d, %d, %1.3f, %1.3f, %1.3f, \n'; 
-            keypressFormatString = '%d, %s, %1.3f, \n';
-            formatStringBIDS = '%1.3f, %1.3f, %d, %s, \n';
+            formatString = '%d, %d, %d, %d, %d, %d, %1.3f, %1.3f, %1.3f \n'; 
+            keypressFormatString = '%d, %s, %1.3f \n';
+            formatStringBIDS = '%1.3f, %1.3f, %d, %d \n';
+            formatStringKeys = '%1.3f, %1.3f, %s, %s \n';
 
 %             % open a file for reading AND writing
 %             % permission 'a' appends data without deleting potential existing content
@@ -374,7 +366,7 @@ for rep = 1:nReps
                 fprintf(dataFile, ['Subject:\t' num2str(subjNumber) '\n']);
                 fprintf(dataFile, ['Age:\t' num2str(subjAge) '\n']);
                 % header for the data
-                fprintf(dataFile, '%s \n', 'onset, duration, trial_type, stim_name');
+                fprintf(dataFile, '%s \n', 'onset, duration, trial_type, stim_mod');
                 fclose(dataFile);
             end
     
@@ -444,6 +436,8 @@ for rep = 1:nReps
         
             % 1 trigger
             waitForTrigger(trigger);
+            
+            %runStart = GetSecs;
 
         for trial = 1:(nTrials+r)
             
@@ -459,10 +453,11 @@ for rep = 1:nReps
             %% visual
             if blockModality == visualModality
                 
+                % get lastEventTime
+                [vlb, ~, lastEventTime] = Screen('Flip', mainWindow);
+                
                 if trial == 1
-                    DrawFormattedText(mainWindow, 'Pay attention to the faces', 'center', 'center', textColor);
-                    [~, ~, lastEventTime] = Screen('Flip', mainWindow);
-                    WaitSecs(0.5);
+                runStart = GetSecs;
                 end
 
                     % frames presentation loop
@@ -486,132 +481,122 @@ for rep = 1:nReps
                 [~, ~, stimEnd] = Screen('Flip', mainWindow);
                 [~, ~, ISIend] = Screen('Flip', mainWindow, stimEnd+(ISI-(stimEnd-stimStart)));
 
+                
             %% auditory    
             elseif blockModality == auditoryModality
                 
+              % get lastEventTime
+              [vlb, ~, lastEventTime] = Screen('Flip', mainWindow);
+              
+              if trial == 1
+              runStart = GetSecs;
+              end
                 
-               if trial == 1
-                    DrawFormattedText(mainWindow, 'Pay attention to the voices', 'center', 'center', textColor);
-                    Screen('Flip', mainWindow);
-                    WaitSecs(0.5);
-                    % clear instructions from screen + fixation cross                    
-                    DrawFormattedText(mainWindow, '+', 'center', 'center', textColor);
-                    Screen('FillRect', mainWindow, bgColor);
-                    [~, ~, lastEventTime] = Screen('Flip', mainWindow);
-               end
-    
-                
-            if pseudoRandExpTrialsBack(trial).nrchannels < 2
-            wavedata = [pseudoRandExpTrialsBack(trial).wavedata ; pseudoRandExpTrialsBack(trial).wavedata];
-            nrchannels = 2;
-            end
-            
-            try
-            % Try with the 'freq'uency we wanted:
-            pahandle = PsychPortAudio('Open', [], [], 0, freq, nrchannels);
-            catch
-                % Failed. Retry with default frequency as suggested by device:
-    
-            psychlasterror('reset');
-            pahandle = PsychPortAudio('Open', [], [], 0, [], nrchannels);
-            end
-        
-            % Fill the audio playback buffer with the audio data 'wavedata':
-            PsychPortAudio('FillBuffer', pahandle, wavedata);
+                if pseudoRandExpTrialsBack(trial).nrchannels < 2
+                wavedata = [pseudoRandExpTrialsBack(trial).wavedata ; pseudoRandExpTrialsBack(trial).wavedata];
+                nrchannels = 2;
+                end
 
-            % Start audio playback for 'repetitions' repetitions of the sound data,
-            % start it immediately (0) and wait for the playback to start, return onset
-            % timestamp.
-            stimStart = GetSecs;
-            PsychPortAudio('Start', pahandle, 1, 0, 1);
-        
+                try
+                % Try with the 'freq'uency we wanted:
+                pahandle = PsychPortAudio('Open', [], [], 0, freq, nrchannels);
+                catch
+                    % Failed. Retry with default frequency as suggested by device:
 
-            % Stay in a little loop for the file duration:     
-            % use frames presentation loop to get the same duration as in the bimodal condition%
-            for f = 1:nFrames   
+                psychlasterror('reset');
+                pahandle = PsychPortAudio('Open', [], [], 0, [], nrchannels);
+                end
 
-            Screen('DrawTexture', mainWindow, blackImage, [], [], 0);
-            [~, ~, lastEventTime] = Screen('Flip', mainWindow, lastEventTime+frameDuration);
+                % Fill the audio playback buffer with the audio data 'wavedata':
+                PsychPortAudio('FillBuffer', pahandle, wavedata);
 
-               % time stamp to measure stimulus duration on screen
-%                if f == 1
-%                   stimStart = GetSecs;
-%                end
+                % Start audio playback for 'repetitions' repetitions of the sound data,
+                % start it immediately (0) and wait for the playback to start, return onset
+                % timestamp.
+                stimStart = PsychPortAudio('Start', pahandle, 1, 0, 1);
 
-            end   
 
-        
-            % Stop playback:
-            PsychPortAudio('Stop', pahandle);
+                % Stay in a little loop for the file duration:     
+                % use frames presentation loop to get the same duration as in the bimodal condition%
+                for f = 1:nFrames   
 
-            % Close the audio device:
-            PsychPortAudio('Close', pahandle);
-            
-            % clear stimulus from screen
-            [~, ~, stimEnd] = Screen('Flip', mainWindow);
-            [~, ~, ISIend] = Screen('Flip', mainWindow, stimEnd+(ISI-(stimEnd-stimStart)));
+                Screen('DrawTexture', mainWindow, blackImage, [], [], 0);
+                DrawFormattedText(mainWindow, '+', 'center', 'center', textColor);
+                [~, ~, lastEventTime] = Screen('Flip', mainWindow, lastEventTime+frameDuration);
+
+                end   
+
+
+                % Stop playback:
+                [~, ~, ~, stimEnd] = PsychPortAudio('Stop', pahandle);
+
+                % Close the audio device:
+                PsychPortAudio('Close', pahandle);
+
+                % clear stimulus from screen
+                Screen('Flip', mainWindow);
+                [~, ~, ISIend] = Screen('Flip', mainWindow, stimEnd+(ISI-(stimEnd-stimStart)));
 
         
             %% bimodal
-            elseif blockModality == multiModality      
+            elseif blockModality == multiModality   
                 
-               if trial == 1
-                    DrawFormattedText(mainWindow, 'Pay attention to the persons', 'center', 'center', textColor);
-                    [~, ~, lastEventTime] = Screen('Flip', mainWindow);
-                    WaitSecs(0.5);
-               end
+              % get lastEventTime
+              [vlb, ~, lastEventTime] = Screen('Flip', mainWindow);
+              
+              if trial == 1
+              runStart = GetSecs;
+              end
                 
-            % play audio first %
-            if pseudoRandExpTrialsBack(trial).nrchannels < 2
-            wavedata = [pseudoRandExpTrialsBack(trial).wavedata ; pseudoRandExpTrialsBack(trial).wavedata];
-            nrchannels = 2;
-            end
-            
-            try
-            % Try with the 'freq'uency we wanted:
-            pahandle = PsychPortAudio('Open', [], [], 0, freq, nrchannels);
-            catch
-                % Failed. Retry with default frequency as suggested by device:
-    
-            psychlasterror('reset');
-            pahandle = PsychPortAudio('Open', [], [], 0, [], nrchannels);
-            end
-        
-            % Fill the audio playback buffer with the audio data 'wavedata':
-            PsychPortAudio('FillBuffer', pahandle, wavedata);
+                % play audio first %
+                if pseudoRandExpTrialsBack(trial).nrchannels < 2
+                wavedata = [pseudoRandExpTrialsBack(trial).wavedata ; pseudoRandExpTrialsBack(trial).wavedata];
+                nrchannels = 2;
+                end
 
-            % Start audio playback for 'repetitions' repetitions of the sound data,
-            % start it immediately (0) and wait for the playback to start, return onset
-            % timestamp.
-            
-            PsychPortAudio('Start', pahandle, 1, 0, 1);
-            stimStart = GetSecs;
-            
-            % frames presentation loop
-            for f = 1:nFrames   
+                try
+                % Try with the 'freq'uency we wanted:
+                pahandle = PsychPortAudio('Open', [], [], 0, freq, nrchannels);
+                catch
+                    % Failed. Retry with default frequency as suggested by device:
 
-            Screen('DrawTexture', mainWindow, pseudoRandExpTrialsBack(trial).visualstimuli(f).imageTexture, [], [], 0);
-            [~, ~, lastEventTime] = Screen('Flip', mainWindow, lastEventTime+frameDuration);
+                psychlasterror('reset');
+                pahandle = PsychPortAudio('Open', [], [], 0, [], nrchannels);
+                end
 
-               % time stamp to measure stimulus duration on screen
-%                if f == 1
-%                   stimStart = GetSecs;
-%                end
+                % Fill the audio playback buffer with the audio data 'wavedata':
+                PsychPortAudio('FillBuffer', pahandle, wavedata);
 
-            end
-             
-            % Stop playback:
-            PsychPortAudio('Stop', pahandle);
+                % Start audio playback for 'repetitions' repetitions of the sound data,
+                % start it immediately (0) and wait for the playback to start, return onset
+                % timestamp.
+                stimStart = PsychPortAudio('Start', pahandle, 1, 0, 1);
+                %stimStart = GetSecs;
 
-            % Close the audio device:
-            PsychPortAudio('Close', pahandle);
-            
-            % end of stimulus timestamp to calculate stim duration
-            % flip screen and ISI
-            % clear stimulus from screen
-            [~, ~, stimEnd] = Screen('Flip', mainWindow);
-            [~, ~, ISIend] = Screen('Flip', mainWindow, stimEnd+(ISI-(stimEnd-stimStart)));
-                    
+                % frames presentation loop
+                for f = 1:nFrames   
+
+                Screen('DrawTexture', mainWindow, pseudoRandExpTrialsBack(trial).visualstimuli(f).imageTexture, [], [], 0);
+                [~, ~, lastEventTime] = Screen('Flip', mainWindow, lastEventTime+frameDuration);
+
+                   % time stamp to measure stimulus duration on screen
+    %                if f == 1
+    %                   stimStart = GetSecs;
+    %                end
+
+                end
+
+                % Stop playback:
+                [~, ~, ~, stimEnd] = PsychPortAudio('Stop', pahandle);
+
+                % Close the audio device:
+                PsychPortAudio('Close', pahandle);
+
+                % flip screen and ISI
+                % clear stimulus from screen
+                Screen('Flip', mainWindow);
+                [~, ~, ISIend] = Screen('Flip', mainWindow, stimEnd+(ISI-(stimEnd-stimStart)));
+
             end
             
                     % SAVE DATA TO THE OUTPUT FILE % header 'rep, block, modality, trial, actor, emotion, stimlus duration'    
@@ -625,16 +610,32 @@ for rep = 1:nReps
                     dataFile = fopen(dataFileNameBIDS, 'a');
                     % print keypresses to outputfile
                     for p = 1:howManyKeyInputs
-                        fprintf(dataFile, formatStringBIDS, (firstPress(KbName(whichKeys(p)))-expStart), 0, KbName(KbName(whichKeys(p))), 'press');
+                       whichKeypress = KbName(KbName(whichKeys(p)));
+                        % identify whether the key event was a press or a trigger %
+                        if whichKeypress == 's'
+                            thisPress = 'trigger';
+                        else
+                            thisPress = 'keypress';
+                        end
+                            % print first keypresses info to output file 
+                            fprintf(dataFile, formatStringKeys, (firstPress(KbName(whichKeys(p)))-runStart), 0, whichKeypress, thisPress);
                     end
                     whichKeys = KbName(find(lastPress));
                     howManyKeyInputs = length(whichKeys);
                     % print keypresses to outputfile
                     for p = 1:howManyKeyInputs
-                        fprintf(dataFile, formatStringBIDS, (lastPress(KbName(whichKeys(p)))-expStart), 0, KbName(KbName(whichKeys(p))), 'press');
+                       whichKeypress = KbName(KbName(whichKeys(p)));
+                        % identify whether the key event was a press or a trigger %
+                        if whichKeypress == 's'
+                            thisPress = 'trigger';
+                        else
+                            thisPress = 'keypress';
+                        end
+                            % print second keypresses info to output file 
+                            fprintf(dataFile, formatStringKeys, (lastPress(KbName(whichKeys(p)))-runStart), 0, whichKeypress, thisPress);
                     end
                     % print stimulus info to outputfile
-                    fprintf(dataFile, formatStringBIDS, stimStart-expStart, stimEnd-stimStart, blockModality, pseudoRandExpTrialsBack(trial).stimulusname);
+                    fprintf(dataFile, formatStringBIDS, stimStart-runStart, stimEnd-stimStart, pseudoRandExpTrialsBack(trial).emotion, blockModality);
                     fclose(dataFile);
                 
 
@@ -643,8 +644,8 @@ for rep = 1:nReps
             repEnd = GetSecs;
             repDuration = (repEnd - repStart)
         
-        
-        DrawFormattedText(mainWindow, 'press space to go on', 'center', 'center', textColor);
+        disp('Press space to go on');
+        DrawFormattedText(mainWindow, 'Well done! The next block is coming up... \n\n Remember to press when you perceive the same emotion twice in a row', 'center', 'center', textColor);
         Screen('Flip', mainWindow);
         waitForKb('space');
         
@@ -655,7 +656,7 @@ for rep = 1:nReps
     
 end
 
-DrawFormattedText(mainWindow, 'end of experiment :)', 'center', 'center', textColor);
+DrawFormattedText(mainWindow, 'End of the experiment :)', 'center', 'center', textColor);
 Screen('Flip', mainWindow);
 expEnd = GetSecs;
 disp('Exp duration:')
