@@ -338,8 +338,8 @@ for rep = 1:nReps
             % format for the output od the data %
             formatString = '%d, %d, %d, %d, %d, %d, %1.3f, %1.3f, %1.3f \n'; 
             keypressFormatString = '%d, %s, %1.3f \n';
-            formatStringBIDS = '%1.3f, %1.3f, %d, %d \n';
-            formatStringKeys = '%1.3f, %1.3f, %s, %s \n';
+            formatStringBIDS = '%1.3f, %1.3f, %d, %d, %d \n';
+            formatStringKeys = '%1.3f, %1.3f, %s, %s, %s \n';
 
 %             % open a file for reading AND writing
 %             % permission 'a' appends data without deleting potential existing content
@@ -366,7 +366,7 @@ for rep = 1:nReps
                 fprintf(dataFile, ['Subject:\t' num2str(subjNumber) '\n']);
                 fprintf(dataFile, ['Age:\t' num2str(subjAge) '\n']);
                 % header for the data
-                fprintf(dataFile, '%s \n', 'onset, duration, trial_type, stim_mod');
+                fprintf(dataFile, '%s \n', 'onset, duration, trial_type, modality, actor');
                 fclose(dataFile);
             end
     
@@ -618,7 +618,7 @@ for rep = 1:nReps
                             thisPress = 'keypress';
                         end
                             % print first keypresses info to output file 
-                            fprintf(dataFile, formatStringKeys, (firstPress(KbName(whichKeys(p)))-runStart), 0, whichKeypress, thisPress);
+                            fprintf(dataFile, formatStringKeys, (firstPress(KbName(whichKeys(p)))-runStart), 0, whichKeypress, thisPress, 'keyevent');
                     end
                     whichKeys = KbName(find(lastPress));
                     howManyKeyInputs = length(whichKeys);
@@ -632,10 +632,10 @@ for rep = 1:nReps
                             thisPress = 'keypress';
                         end
                             % print second keypresses info to output file 
-                            fprintf(dataFile, formatStringKeys, (lastPress(KbName(whichKeys(p)))-runStart), 0, whichKeypress, thisPress);
+                            fprintf(dataFile, formatStringKeys, (lastPress(KbName(whichKeys(p)))-runStart), 0, whichKeypress, thisPress, 'keyevent');
                     end
                     % print stimulus info to outputfile
-                    fprintf(dataFile, formatStringBIDS, stimStart-runStart, stimEnd-stimStart, pseudoRandExpTrialsBack(trial).emotion, blockModality);
+                    fprintf(dataFile, formatStringBIDS, stimStart-runStart, stimEnd-stimStart, pseudoRandExpTrialsBack(trial).emotion, blockModality, pseudoRandExpTrialsBack(trial).actor);
                     fclose(dataFile);
                 
 
