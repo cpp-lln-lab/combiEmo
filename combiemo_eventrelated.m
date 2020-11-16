@@ -434,15 +434,20 @@ for rep = 1:nReps
                 end
              end
         
-            % 1 trigger
+            % 1 trigger then start
             waitForTrigger(trigger);
             
-            %runStart = GetSecs;
+            % let me know how many trials in this run
+            disp('Number of trials in this run:');
+            disp(nTrials+r);
 
+        % trial loop of the current run
         for trial = 1:(nTrials+r)
             
+            % let me know the current trial number
+            disp('Current trial:');
+            disp(trial);
 
-            
             % start queuing for triggers and subject's keypresses (flush previous queue) %
                % record any keypress or scanner trigger (flush previously queued ones) % 
                KbQueueFlush(deviceNumber);         
@@ -644,8 +649,13 @@ for rep = 1:nReps
             repEnd = GetSecs;
             repDuration = (repEnd - repStart)
         
+        
         disp('Press space to go on');
-        DrawFormattedText(mainWindow, 'Well done! The next block is coming up... \n\n Remember to press when you perceive the same emotion twice in a row', 'center', 'center', textColor);
+            if block == 3
+                DrawFormattedText(mainWindow, 'Well done! Now you can rest for about 30 seconds, and the next block will start afterwards... \n\n Remember to press when you perceive the same emotion twice in a row', 'center', 'center', textColor);
+            else
+                DrawFormattedText(mainWindow, 'Well done! The next block is coming up... \n\n Remember to press when you perceive the same emotion twice in a row', 'center', 'center', textColor);
+            end
         Screen('Flip', mainWindow);
         waitForKb('space');
         
