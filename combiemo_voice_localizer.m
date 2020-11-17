@@ -25,14 +25,14 @@ end
 addpath(genpath('./supporting_functions'));
 
 %%% SET UP OUTPUT FILES %%%
-dataFileName = [cd '/data/sub-' num2str(subjNumber) '_ses-' num2str(nSes) '_task-' expName '_allevents.txt'];
-dataFileNameBIDS = [cd '/data/sub-' num2str(subjNumber) '_ses-' num2str(nSes) '_task-' expName '_events.txt'];
+dataFileName = [cd '/data/sub-' num2str(subjNumber) '_ses-' num2str(nSes) '_task-' expName '_allevents.tsv'];
+dataFileNameBIDS = [cd '/data/sub-' num2str(subjNumber) '_ses-' num2str(nSes) '_task-' expName '_events.tsv'];
 
 % format for the output od the data %
-formatString = '%d, %d, %s, %1.3f, %1.3f, %1.3f, \n';
-formatStringBIDS = '%1.3f, %1.3f, %s, \n';
-keypressFormatString = '%d, %1.3f, \n';
-baselineFormatString = '%s, %1.3f, \n';
+formatString = '%d, %d, %s, %1.3f, %1.3f, %1.3f \n';
+formatStringBIDS = '%1.3f, %1.3f, %s \n';
+keypressFormatString = '%d, %1.3f \n';
+baselineFormatString = '%s, %1.3f \n';
 
 % open a file for reading AND writing
 % permission 'a' appends data without deleting potential existing content
@@ -176,7 +176,7 @@ zeroBackStimBlocksObjects = setdiff(remainingBlocksObjects,oneBackStimBlocksObje
 % triggers
 trigger = struct;
 trigger.testingDevice = 'mri'; trigger.triggerKey = 's'; trigger.numTriggers = 1; trigger.win = mainWindow; trigger.text.color = textColor;
-trigger.bids.MRI.RepetitionTime = 2.6;
+trigger.bids.MRI.RepetitionTime = 1.75;
 
 waitForTrigger(trigger);
 
@@ -283,31 +283,31 @@ for rep=1:nReps
          for b=1:(length(stimEmotion)+w)
                 if w == 1
                     if b <= backTrialsObjects
-                    randObjectsBack(b) = objects(b);
+                    randObjectsBack(b) = randObjects(b);
 
                     elseif b == backTrialsObjects+1
-                    randObjectsBack(b) = objects(backTrialsObjects);
+                    randObjectsBack(b) = randObjects(backTrialsObjects);
 
                     elseif b > backTrialsObjects+1
-                    randObjectsBack(b) = objects(b-1);
+                    randObjectsBack(b) = randObjects(b-1);
 
                     end
 
                 elseif w == 2
                     if b <= backTrialsObjects(1)
-                    randObjectsBack(b) = objects(b);
+                    randObjectsBack(b) = randObjects(b);
 
                     elseif b == backTrialsObjects(1)+1
-                    randObjectsBack(b) = objects(backTrialsObjects(1));
+                    randObjectsBack(b) = randObjects(backTrialsObjects(1));
 
                     elseif b == backTrialsObjects(2)+2
-                    randObjectsBack(b) = objects(backTrialsObjects(2));
+                    randObjectsBack(b) = randObjects(backTrialsObjects(2));
 
                     elseif b > backTrialsObjects(1)+1 && b < backTrialsObjects(2)+2
-                    randObjectsBack(b) = objects(b-1);
+                    randObjectsBack(b) = randObjects(b-1);
 
                     elseif b > backTrialsObjects(2)+2
-                    randObjectsBack(b) = objects(b-2);
+                    randObjectsBack(b) = randObjects(b-2);
 
                     end
                 end
@@ -351,8 +351,7 @@ for rep=1:nReps
             % Start audio playback for 'repetitions' repetitions of the sound data,
             % start it immediately (0) and wait for the playback to start, return onset
             % timestamp.
-            stimStart = GetSecs;
-            PsychPortAudio('Start', pahandle, 1, 0, 1);
+            stimStart = PsychPortAudio('Start', pahandle, 1, 0, 1);
 
 
             % Stay in a little loop for the file duration:        
@@ -369,15 +368,15 @@ for rep=1:nReps
             end
 
             % Stop playback:
-            PsychPortAudio('Stop', pahandle);
+            [~, ~, ~, stimEnd] = PsychPortAudio('Stop', pahandle);
 
             % Close the audio device:
             PsychPortAudio('Close', pahandle);
 
-            stimEnd = GetSecs;
+            % "clear" stimulus from screen
             Screen('Flip', mainWindow, stimEnd+ISI);
 
-            
+            % open file to append all events info
             dataFile = fopen(dataFileName, 'a');
             % print stimulus info to outputfile
             fprintf(dataFile, formatString, rep, trial, pseudorandVoicesBack(trial).stimulusname, GetSecs-stimEnd, stimEnd-stimStart, stimStart-expStart);
@@ -391,7 +390,7 @@ for rep=1:nReps
         [pressed, firstPress, firstRelease, lastPress, lastRelease] = KbQueueCheck(deviceNumber);
         whichKeys = KbName(find(firstPress));
         howManyKeyInputs = length(whichKeys);
-        % open output file to append
+        % open output file to append blocks info
         dataFile = fopen(dataFileNameBIDS, 'a');
         % print keypresses to outputfile
         for p = 1:howManyKeyInputs
