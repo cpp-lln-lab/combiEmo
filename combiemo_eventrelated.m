@@ -320,51 +320,38 @@ for rep = 1:nReps
     if blockModality == visualModality
         r = n;
         backTrials = backTrialsFaces;
+        expName = 'eventrelatedCombiemoVisual';
     elseif blockModality == auditoryModality
         r = v;
-        backTrials = backTrialsVoices;
+        backTrials = backTrialsVoices;        
+        expName = 'eventrelatedCombiemoAuditory';
     elseif blockModality == multiModality
         r = w;
-        backTrials = backTrialsPerson;
+        backTrials = backTrialsPerson;        
+        expName = 'eventrelatedCombiemoBimodal';
     end
     
       repStart = GetSecs;
     
             % Set up output file for current run (1 BLOCK = 1 ACQUISITION RUN) % 
             %dataFileName = [cd '/data/sub-' num2str(subjNumber) '_ses-' num2str(nSes) '_task-' expName '_run-' num2str(rep) num2str(block) '_allevents.tsv'];
-            dataFileNameBIDS = [cd '/data/sub-' num2str(subjNumber) '_ses-' num2str(nSes) '_task-' expName '_run-' num2str(rep) num2str(block) '_events.tsv'];
+            dataFileNameBIDS = [cd '/data/sub-' num2str(subjNumber) '_ses-' num2str(nSes) '_task-' expName '_run-' num2str(rep) '_events.tsv'];
             
             
             % format for the output od the data %
-            formatString = '%d, %d, %d, %d, %d, %d, %1.3f, %1.3f, %1.3f \n'; 
-            keypressFormatString = '%d, %s, %1.3f \n';
             formatStringBIDS = '%1.3f, %1.3f, %d, %d, %d \n';
             formatStringKeys = '%1.3f, %1.3f, %s, %s, %s \n';
 
-%             % open a file for reading AND writing
-%             % permission 'a' appends data without deleting potential existing content
-%             if exist(dataFileName, 'file') == 0
-%                 dataFile = fopen(dataFileName, 'a');
-%                 % header
-%                 fprintf(dataFile, ['Experiment:\t' expName '\n']);
-%                 fprintf(dataFile, ['date:\t' datestr(now) '\n']);
-%                 fprintf(dataFile, ['Subject:\t' subjNumber '\n']);
-%                 fprintf(dataFile, ['Age:\t' num2str(subjAge) '\n']);
-%                 % data header
-%                 fprintf(dataFile, '%s \n', 'repetition, block, modality, trial, actor, emotion, stimulus duration, ISI, timestamp'); 
-%                 fclose(dataFile);
-% 
-%             end
             
             % open files for reading AND writing
             % permission 'a' appends data without deleting potential existing content
             if exist(dataFileNameBIDS, 'file') == 0
                 dataFile = fopen(dataFileNameBIDS, 'a');
-                % header
-                fprintf(dataFile, ['Experiment:\t' expName '\n']);
-                fprintf(dataFile, ['date:\t' datestr(now) '\n']);
-                fprintf(dataFile, ['Subject:\t' num2str(subjNumber) '\n']);
-                fprintf(dataFile, ['Age:\t' num2str(subjAge) '\n']);
+%                 % header
+%                 fprintf(dataFile, ['Experiment:\t' expName '\n']);
+%                 fprintf(dataFile, ['date:\t' datestr(now) '\n']);
+%                 fprintf(dataFile, ['Subject:\t' num2str(subjNumber) '\n']);
+%                 fprintf(dataFile, ['Age:\t' num2str(subjAge) '\n']);
                 % header for the data
                 fprintf(dataFile, '%s \n', 'onset, duration, trial_type, modality, actor');
                 fclose(dataFile);
