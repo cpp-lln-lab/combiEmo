@@ -55,12 +55,7 @@ end
 % open files for reading AND writing
 % permission 'a' appends data without deleting potential existing content
 if exist(dataFileNameBIDS, 'file') == 0
-    dataFile = fopen(dataFileNameBIDS, 'a');        
-    % header
-    fprintf(dataFile, ['Experiment:\t' expName '\n']);
-    fprintf(dataFile, ['date:\t' datestr(now) '\n']);
-    fprintf(dataFile, ['Subject:\t' num2str(subjNumber) '\n']);
-    fprintf(dataFile, ['Age:\t' num2str(subjAge) '\n']);    
+    dataFile = fopen(dataFileNameBIDS, 'a');         
     % header for the data
     fprintf(dataFile, '%s \n', 'onset, duration, trial_type'); 
     fclose(dataFile);
@@ -199,9 +194,9 @@ for rep=1:nReps
         dataFile = fopen(dataFileName, 'a');
         fprintf(dataFile, baselineFormatString, 'baseline' ,GetSecs-expStart);
         fclose(dataFile);
-        dataFile = fopen(dataFileNameBIDS, 'a');
-        fprintf(dataFile, formatStringBIDS, GetSecs-expStart, 10, trial_type(3).type);
-        fclose(dataFile);
+%         dataFile = fopen(dataFileNameBIDS, 'a');
+%         fprintf(dataFile, formatStringBIDS, GetSecs-expStart, 10, trial_type(3).type);
+%         fclose(dataFile);
         WaitSecs(10);
     end
 
@@ -390,17 +385,31 @@ for rep=1:nReps
         [pressed, firstPress, firstRelease, lastPress, lastRelease] = KbQueueCheck(deviceNumber);
         whichKeys = KbName(find(firstPress));
         howManyKeyInputs = length(whichKeys);
-        % open output file to append blocks info
+        % open output file to append
         dataFile = fopen(dataFileNameBIDS, 'a');
         % print keypresses to outputfile
         for p = 1:howManyKeyInputs
-        fprintf(dataFile, formatStringBIDS, (firstPress(KbName(whichKeys(p)))-expStart), 0, KbName(KbName(whichKeys(p))));
+        whichKeypress = KbName(KbName(whichKeys(p)));
+            % identify whether the key event was a press or a trigger %
+            if whichKeypress == 's'
+                thisPress = 'trigger';
+            else
+                thisPress = 'keypress';
+            end
+        fprintf(dataFile, formatStringBIDS, (firstPress(KbName(whichKeys(p)))-expStart), 0, thisPress);
         end
         whichKeys = KbName(find(lastPress));
         howManyKeyInputs = length(whichKeys);
         % print keypresses to outputfile
         for p = 1:howManyKeyInputs
-        fprintf(dataFile, formatStringBIDS, (lastPress(KbName(whichKeys(p)))-expStart), 0, KbName(KbName(whichKeys(p))));
+        whichKeypress = KbName(KbName(whichKeys(p)));
+        % identify whether the key event was a press or a trigger %
+            if whichKeypress == 's'
+                thisPress = 'trigger';
+            else
+                thisPress = 'keypress';
+            end
+        fprintf(dataFile, formatStringBIDS, (lastPress(KbName(whichKeys(p)))-expStart), 0, thisPress);
         end
         % print stimulus info to outputfile
         fprintf(dataFile, formatStringBIDS, voiceBlockStart-expStart, voiceBlockEnd-voiceBlockStart, trial_type(1).type);
@@ -488,13 +497,27 @@ for rep=1:nReps
         dataFile = fopen(dataFileNameBIDS, 'a');
         % print keypresses to outputfile
         for p = 1:howManyKeyInputs
-        fprintf(dataFile, formatStringBIDS, (firstPress(KbName(whichKeys(p)))-expStart), 0, KbName(KbName(whichKeys(p))));
+        whichKeypress = KbName(KbName(whichKeys(p)));
+            % identify whether the key event was a press or a trigger %
+            if whichKeypress == 's'
+                thisPress = 'trigger';
+            else
+                thisPress = 'keypress';
+            end
+        fprintf(dataFile, formatStringBIDS, (firstPress(KbName(whichKeys(p)))-expStart), 0, thisPress);
         end
         whichKeys = KbName(find(lastPress));
         howManyKeyInputs = length(whichKeys);
         % print keypresses to outputfile
         for p = 1:howManyKeyInputs
-        fprintf(dataFile, formatStringBIDS, (lastPress(KbName(whichKeys(p)))-expStart), 0, KbName(KbName(whichKeys(p))));
+        whichKeypress = KbName(KbName(whichKeys(p)));
+        % identify whether the key event was a press or a trigger %
+            if whichKeypress == 's'
+                thisPress = 'trigger';
+            else
+                thisPress = 'keypress';
+            end
+        fprintf(dataFile, formatStringBIDS, (lastPress(KbName(whichKeys(p)))-expStart), 0, thisPress);
         end
         % print stimulus info to outputfile
         fprintf(dataFile, formatStringBIDS, objectBlockStart-expStart, objectBlockEnd-objectBlockStart, trial_type(2).type);
@@ -509,9 +532,9 @@ for rep=1:nReps
                 dataFile = fopen(dataFileName, 'a');
                 fprintf(dataFile, baselineFormatString, 'baseline',GetSecs-expStart);
                 fclose(dataFile);
-                dataFile = fopen(dataFileNameBIDS, 'a');
-                fprintf(dataFile, formatStringBIDS, GetSecs-expStart, 10, trial_type(3).type);
-                fclose(dataFile);
+%                 dataFile = fopen(dataFileNameBIDS, 'a');
+%                 fprintf(dataFile, formatStringBIDS, GetSecs-expStart, 10, trial_type(3).type);
+%                 fclose(dataFile);
                 WaitSecs(10);
             end
 end
