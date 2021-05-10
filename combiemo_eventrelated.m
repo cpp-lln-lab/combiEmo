@@ -206,6 +206,7 @@ stimName = {'27ne','27di','27fe','27ha','27sa','30ne','30di','30fe','30ha','30sa
 
 stimEmotion = repmat(1:5,1,4);
 stimActor = [repmat(27,1,5),repmat(30,1,5),repmat(32,1,5),repmat(33,1,5)];
+stimPointer = [1,5,9,13,17,2,6,10,14,18,3,7,11,15,19,4,8,12,16,20];
 
 %% Read everything into a structure
 % preallocate
@@ -219,6 +220,7 @@ for t = 1:length(stimName)
         myExpTrials(t).nrchannels = size(myExpTrials(t).wavedata,1);
         myExpTrials(t).emotion = stimEmotion(t);
         myExpTrials(t).actor = stimActor(t);
+        myExpTrials(t).stimpointer = stimPointer(t);
 end
 
 % black image for audio-only presentation
@@ -342,8 +344,8 @@ for rep = 1:nReps
             % format for the output od the data %
             %formatStringBIDS = '%1.3f, %1.3f, %d, %d, %d \n'; %comma eparated%
             %formatStringKeys = '%1.3f, %1.3f, %s, %s, %s \n'; %comma eparated%
-            formatStringBIDS = '%1.3f\t %1.3f\t %d\t %d\t %d \n';
-            formatStringKeys = '%1.3f\t %1.3f\t %s\t %s\t %s \n';
+            formatStringBIDS = '%1.3f\t %1.3f\t %d\t %d\t %d\t %d \n';
+            formatStringKeys = '%1.3f\t %1.3f\t %s\t %s\t %s\t %s \n';
 
             
             % open files for reading AND writing
@@ -356,7 +358,7 @@ for rep = 1:nReps
 %                 fprintf(dataFile, ['Subject:\t' num2str(subjNumber) '\n']);
 %                 fprintf(dataFile, ['Age:\t' num2str(subjAge) '\n']);
                 % header for the data
-                fprintf(dataFile, '%s \n', 'onset   duration    trial_type  modality    actor');
+                fprintf(dataFile, '%s \n', 'onset   duration    trial_type  modality    actor   stim');
                 fclose(dataFile);
             end
     
@@ -627,7 +629,7 @@ for rep = 1:nReps
                             thisPress = 'keypress';
                         end
                             % print first keypresses info to output file 
-                            fprintf(dataFile, formatStringKeys, (firstPress(KbName(whichKeys(p)))-runStart), 0, whichKeypress, thisPress, 'keyevent');
+                            fprintf(dataFile, formatStringKeys, (firstPress(KbName(whichKeys(p)))-runStart), 0, whichKeypress, thisPress, whichKeypress, whichKeypress);
                     end
                     whichKeys = KbName(find(lastPress));
                     howManyKeyInputs = length(whichKeys);
@@ -641,10 +643,10 @@ for rep = 1:nReps
                             thisPress = 'keypress';
                         end
                             % print second keypresses info to output file 
-                            fprintf(dataFile, formatStringKeys, (lastPress(KbName(whichKeys(p)))-runStart), 0, whichKeypress, thisPress, 'keyevent');
+                            fprintf(dataFile, formatStringKeys, (lastPress(KbName(whichKeys(p)))-runStart), 0, whichKeypress, thisPress, whichKeypress, whichKeypress);
                     end
                     % print stimulus info to outputfile
-                    fprintf(dataFile, formatStringBIDS, stimStart-runStart, stimEnd-stimStart, pseudoRandExpTrialsBack(trial).emotion, blockModality, pseudoRandExpTrialsBack(trial).actor);
+                    fprintf(dataFile, formatStringBIDS, stimStart-runStart, stimEnd-stimStart, pseudoRandExpTrialsBack(trial).emotion, blockModality, pseudoRandExpTrialsBack(trial).actor, pseudoRandExpTrialsBack(trial).stimpointer);
                     fclose(dataFile);
                 
 
