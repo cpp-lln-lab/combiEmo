@@ -657,11 +657,11 @@ for rep = 1:nReps
         
         
         disp('Press space to go on');
-            if block == 3
-                DrawFormattedText(mainWindow, 'Well done! Now you can rest for about 30 seconds, and the next block will start afterwards... \n\n Remember to press when you perceive the same emotion twice in a row', 'center', 'center', textColor);
-            else
+         %   if block == 3
+         %       DrawFormattedText(mainWindow, 'Well done! Now you can rest for about 30 seconds, and the next block will start afterwards... \n\n Remember to press when you perceive the same emotion twice in a row', 'center', 'center', textColor);
+         %   else
                 DrawFormattedText(mainWindow, 'Well done! The next block is coming up... \n\n Remember to press when you perceive the same emotion twice in a row', 'center', 'center', textColor);
-            end
+         %   end
         Screen('Flip', mainWindow);
         waitForKb('space');
         
