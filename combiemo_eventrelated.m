@@ -1,10 +1,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%  Stimulation for functional runs of fMRI design  %%%
 %%%   programmer: Federica Falagiarda October 2019   %%%
+%%%   current last mod: May 2021                     %%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Once fully run, this script has given a txt output file per run (nReps*3) with:%
-
 
 % stimuli are presented in blocks; each block contains one modality of stimuli %
 % possible modalities are: visual (face), auditory (voice), bimodal (face and voice vombined) %
@@ -33,6 +33,7 @@ multiModality = 3;
 
 % for the frame loop (visual stim)
 nFrames = 30; % total num of frames in a whole video
+nStimPerEvent = 2;
 stimXsize = 720;
 stimYsize = 480;
 
@@ -88,7 +89,7 @@ interFrameInterval = Screen('GetFlipInterval', mainWindow); % in seconds
 msInterFrameInterval = interFrameInterval*1000; %in ms
 
 % timings in my trial sequence
-ISI = 4 - interFrameInterval/3; % actually full event duration
+ISI = 5 - interFrameInterval/3; % actually full event duration
 fixationDur = 0.5 - interFrameInterval/3;
 responseDur = 4 - interFrameInterval/3;
 practiceResponseDur = 5 - interFrameInterval/3;
@@ -339,8 +340,10 @@ for rep = 1:nReps
             
             
             % format for the output od the data %
-            formatStringBIDS = '%1.3f, %1.3f, %d, %d, %d \n';
-            formatStringKeys = '%1.3f, %1.3f, %s, %s, %s \n';
+            %formatStringBIDS = '%1.3f, %1.3f, %d, %d, %d \n'; %comma eparated%
+            %formatStringKeys = '%1.3f, %1.3f, %s, %s, %s \n'; %comma eparated%
+            formatStringBIDS = '%1.3f\t %1.3f\t %d\t %d\t %d \n';
+            formatStringKeys = '%1.3f\t %1.3f\t %s\t %s\t %s \n';
 
             
             % open files for reading AND writing
@@ -353,7 +356,7 @@ for rep = 1:nReps
 %                 fprintf(dataFile, ['Subject:\t' num2str(subjNumber) '\n']);
 %                 fprintf(dataFile, ['Age:\t' num2str(subjAge) '\n']);
                 % header for the data
-                fprintf(dataFile, '%s \n', 'onset, duration, trial_type, modality, actor');
+                fprintf(dataFile, '%s \n', 'onset   duration    trial_type  modality    actor');
                 fclose(dataFile);
             end
     
@@ -452,18 +455,20 @@ for rep = 1:nReps
                 runStart = GetSecs;
                 end
 
-                    % frames presentation loop
+                   % frames presentation loop
+                   for stimNr = 1:nStimPerEvent                    
                     for f = 1:nFrames   
 
                        Screen('DrawTexture', mainWindow, pseudoRandExpTrialsBack(trial).visualstimuli(f).imageTexture, [], [], 0);
                        [vlb, ~, lastEventTime] = Screen('Flip', mainWindow, lastEventTime+frameDuration);
 
                        % time stamp to measure stimulus duration on screen
-                       if f == 1
+                       if f == 1 && stimNr == 1
                           stimStart = GetSecs;
                        end
 
                     end
+                   end
                     
                 % clear last frame                
                 Screen('FillRect', mainWindow, bgColor);
@@ -505,22 +510,30 @@ for rep = 1:nReps
                 % Start audio playback for 'repetitions' repetitions of the sound data,
                 % start it immediately (0) and wait for the playback to start, return onset
                 % timestamp.
-                stimStart = PsychPortAudio('Start', pahandle, 1, 0, 1);
+                
+                for stimNr = 1:nStimPerEvent 
+                    
+                    % stim start time stamp
+                    if stimNr == 1
+                    stimStart = PsychPortAudio('Start', pahandle, 1, 0, 1);
+                    else 
+                    PsychPortAudio('Start', pahandle, 1, 0, 1);
+                    end
+                    
 
+                    % Stay in a little loop for the file duration:     
+                    % use frames presentation loop to get the same duration as in the bimodal condition%
+                    for f = 1:nFrames   
 
-                % Stay in a little loop for the file duration:     
-                % use frames presentation loop to get the same duration as in the bimodal condition%
-                for f = 1:nFrames   
+                    Screen('DrawTexture', mainWindow, blackImage, [], [], 0);
+                    DrawFormattedText(mainWindow, '+', 'center', 'center', textColor);
+                    [~, ~, lastEventTime] = Screen('Flip', mainWindow, lastEventTime+frameDuration);
 
-                Screen('DrawTexture', mainWindow, blackImage, [], [], 0);
-                DrawFormattedText(mainWindow, '+', 'center', 'center', textColor);
-                [~, ~, lastEventTime] = Screen('Flip', mainWindow, lastEventTime+frameDuration);
-
-                end   
-
-
+                    end   
+                    
                 % Stop playback:
                 [~, ~, ~, stimEnd] = PsychPortAudio('Stop', pahandle);
+                end
 
                 % Close the audio device:
                 PsychPortAudio('Close', pahandle);
@@ -562,24 +575,28 @@ for rep = 1:nReps
                 % Start audio playback for 'repetitions' repetitions of the sound data,
                 % start it immediately (0) and wait for the playback to start, return onset
                 % timestamp.
-                stimStart = PsychPortAudio('Start', pahandle, 1, 0, 1);
-                %stimStart = GetSecs;
+                
+                for stimNr = 1:nStimPerEvent
+                    
+                    % stim start time stamp
+                    if stimNr == 1
+                    stimStart = PsychPortAudio('Start', pahandle, 1, 0, 1);
+                    else 
+                    PsychPortAudio('Start', pahandle, 1, 0, 1);
+                    end
 
-                % frames presentation loop
-                for f = 1:nFrames   
+                    % frames presentation loop
+                    for f = 1:nFrames   
 
-                Screen('DrawTexture', mainWindow, pseudoRandExpTrialsBack(trial).visualstimuli(f).imageTexture, [], [], 0);
-                [~, ~, lastEventTime] = Screen('Flip', mainWindow, lastEventTime+frameDuration);
+                    Screen('DrawTexture', mainWindow, pseudoRandExpTrialsBack(trial).visualstimuli(f).imageTexture, [], [], 0);
+                    [~, ~, lastEventTime] = Screen('Flip', mainWindow, lastEventTime+frameDuration);
 
-                   % time stamp to measure stimulus duration on screen
-    %                if f == 1
-    %                   stimStart = GetSecs;
-    %                end
+                    end
 
+                    % Stop playback:
+                    [~, ~, ~, stimEnd] = PsychPortAudio('Stop', pahandle);
+                
                 end
-
-                % Stop playback:
-                [~, ~, ~, stimEnd] = PsychPortAudio('Stop', pahandle);
 
                 % Close the audio device:
                 PsychPortAudio('Close', pahandle);
