@@ -18,15 +18,13 @@ subjAge = input('Age:');
 nReps = input('Number of repetitions:'); % number or reps of this localizer, ideally 12+ %
 
 if isempty(nReps)
-    nReps=12;
+    nReps = 12;
 end
-
-
 
 %%% SET UP OUTPUT FILES %%%
 dataFileName = [cd '/data/subj' num2str(subjNumber) '_' expName '.txt'];
 % format for the output od the data %
-formatString = '%d, %d, %s, %s, %1.3f, %1.3f, %1.3f \n'; 
+formatString = '%d, %d, %s, %s, %1.3f, %1.3f, %1.3f \n';
 keypressFormatString = '%d, %s, %1.3f, \n';
 baselineFormatString = '%1.3f \n';
 
@@ -35,17 +33,17 @@ baselineFormatString = '%1.3f \n';
 
 if exist(dataFileName, 'file') == 0
     dataFile = fopen(dataFileName, 'a');
-        
+
     % header
     fprintf(dataFile, ['Experiment:\t' expName '\n']);
     fprintf(dataFile, ['date:\t' datestr(now) '\n']);
     fprintf(dataFile, ['Subject:\t' num2str(subjNumber) '\n']);
     fprintf(dataFile, ['Age:\t' num2str(subjAge) '\n']);
-    
-    %data
-    fprintf(dataFile, '%s \n', 'block, trial, emotion, actor, ISIduration, stimduration, timestamp'); 
+
+    % data
+    fprintf(dataFile, '%s \n', 'block, trial, emotion, actor, ISIduration, stimduration, timestamp');
     fclose(dataFile);
-   
+
 end
 
 %%% INITIALIZE SCREEN AND START THE STIMULI PRESENTATION %%%
@@ -57,7 +55,7 @@ AssertOpenGL;
 % of 0 runs these tests, and a value of 1 inhibits them. This
 % should always be set to 0 for actual experiments
 Screen('Preference', 'SkipSyncTests', 0);
-%Screen('Preference', 'SkipSyncTests', 2);
+% Screen('Preference', 'SkipSyncTests', 2);
 
 Screen('Preference', 'ConserveVRAM', 4096);
 
@@ -65,29 +63,29 @@ Screen('Preference', 'ConserveVRAM', 4096);
 Screen('Preference', 'DefaultFontSize', 28);
 
 % OpenWindow
-%[mainWindow, screenRect] = Screen('OpenWindow', max(screenVector), bgColor, [0 0 1000 700], 32, 2);
+% [mainWindow, screenRect] = Screen('OpenWindow', max(screenVector), bgColor, [0 0 1000 700], 32, 2);
 [mainWindow, screenRect] = Screen('OpenWindow', max(Screen('Screens')), bgColor, [], 32, 2);
 
 % estimate the monitor flip interval for the onscreen window
 interFrameInterval = Screen('GetFlipInterval', mainWindow); % in seconds
-msInterFrameInterval = interFrameInterval*1000; %in ms
- 
+msInterFrameInterval = interFrameInterval * 1000; % in ms
+
 % timings in my stimuli presentation
-fileDuration = 1 - interFrameInterval/3;
-ISI = 0.1 - interFrameInterval/3;
+fileDuration = 1 - interFrameInterval / 3;
+ISI = 0.1 - interFrameInterval / 3;
 % create a distribution to draw random jitters
-%minJitter=-0.25;
-%maxJitter=0.25;
-%jitterDistribution=create_jitter(minJitter,maxJitter);
+% minJitter=-0.25;
+% maxJitter=0.25;
+% jitterDistribution=create_jitter(minJitter,maxJitter);
 
 % get width and height of the screen
 screenVector = Screen('Screens');
 [widthWin, heightWin] = Screen('WindowSize', mainWindow);
 widthDis = Screen('DisplaySize', max(screenVector));
-%Priority(MaxPriority(mainWindow));
+% Priority(MaxPriority(mainWindow));
 
 % to overcome the well-known randomisation problem
-RandStream.setGlobalStream (RandStream('mt19937ar','seed',sum(100*clock)));
+RandStream.setGlobalStream (RandStream('mt19937ar', 'seed', sum(100 * clock)));
 
 % hide mouse cursor
 HideCursor(mainWindow);
@@ -98,65 +96,64 @@ KbName('UnifyKeyNames');
 
 % build structure for all stimuli needed in this localizer
 %
-stimNameVoices = {'A27ne.wav','A27di.wav','A27fe.wav','A27ha.wav','A27sa.wav','A30ne.wav','A30di.wav','A30fe.wav','A30ha.wav','A30sa.wav','A32ne.wav','A32di.wav','A32fe.wav','A32ha.wav','A32sa.wav','A33ne.wav','A33di.wav','A33fe.wav','A33ha.wav','A33sa.wav'};
-stimEmotion = repmat(1:5,1,4);
-stimActor = [repmat(27,1,5),repmat(30,1,5),repmat(32,1,5),repmat(33,1,5)];
+stimNameVoices = {'A27ne.wav', 'A27di.wav', 'A27fe.wav', 'A27ha.wav', 'A27sa.wav', 'A30ne.wav', 'A30di.wav', 'A30fe.wav', 'A30ha.wav', 'A30sa.wav', 'A32ne.wav', 'A32di.wav', 'A32fe.wav', 'A32ha.wav', 'A32sa.wav', 'A33ne.wav', 'A33di.wav', 'A33fe.wav', 'A33ha.wav', 'A33sa.wav'};
+stimEmotion = repmat(1:5, 1, 4);
+stimActor = [repmat(27, 1, 5), repmat(30, 1, 5), repmat(32, 1, 5), repmat(33, 1, 5)];
 blockTypeVoices = 1; % 1 for voices, 2 for objects
 
-stimNameObjects = {'waterpour.wav','carignition.wav','mixing.wav','egg.wav','bikebell.wav','applause.wav','engine.wav','grinder.wav','sharpener.wav','opencan.wav','churchbell.wav','hairdryer.wav','keyboard.wav','phone.wav','river.wav','saw.wav','thunder.wav','toothbrush.wav','traffic.wav','wind.wav'};
+stimNameObjects = {'waterpour.wav', 'carignition.wav', 'mixing.wav', 'egg.wav', 'bikebell.wav', 'applause.wav', 'engine.wav', 'grinder.wav', 'sharpener.wav', 'opencan.wav', 'churchbell.wav', 'hairdryer.wav', 'keyboard.wav', 'phone.wav', 'river.wav', 'saw.wav', 'thunder.wav', 'toothbrush.wav', 'traffic.wav', 'wind.wav'};
 blockTypeObjects = 2;
 
-
-
 %% Build structures for stimuli presentation
-nStim = 20; %per block
+nStim = 20; % per block
 
 voices = struct;
-for v=1:nStim
+for v = 1:nStim
     voices(v).stimulusname = stimNameVoices{v};
     [voices(v).y, voices(v).freq] = audioread([cd '/auditory_stim/' voices(v).stimulusname]);
     voices(v).wavedata = voices(v).y';
-    voices(v).nrchannels = size(voices(v).wavedata,1);
+    voices(v).nrchannels = size(voices(v).wavedata, 1);
     voices(v).emotion = stimEmotion(v);
     voices(v).actor = stimActor(v);
     voices(v).blocktype = blockTypeVoices;
 end
 
 objects = struct;
-for o=1:nStim
+for o = 1:nStim
     objects(o).stimulusname = stimNameObjects{o};
     [objects(o).y, objects(o).freq] = audioread([cd '/auditory_stim/' objects(o).stimulusname]);
     objects(o).wavedata = objects(o).y';
-    objects(o).nrchannels = size(objects(o).wavedata,1);
+    objects(o).nrchannels = size(objects(o).wavedata, 1);
     objects(o).blocktype = blockTypeObjects;
 end
-
-
 
 %% Insert the task stimuli as extra trials
 % vector with block numbers
 allBlocks = 1:nReps;
 % randomly select a third of the blocks to have 2 1-back stimuli for the voices %
-twoBackStimBlocksVoices = datasample(allBlocks,round(length(allBlocks)/3),'Replace',false);
+twoBackStimBlocksVoices = datasample(allBlocks, round(length(allBlocks) / 3), 'Replace', false);
 % from the remaining blocks, select another third to have one 1-back stimulus %
-remainingBlocksVoices = setdiff(allBlocks,twoBackStimBlocksVoices);
-oneBackStimBlocksVoices = datasample(remainingBlocksVoices,round(length(allBlocks)/3),'Replace',false);
+remainingBlocksVoices = setdiff(allBlocks, twoBackStimBlocksVoices);
+oneBackStimBlocksVoices = datasample(remainingBlocksVoices, round(length(allBlocks) / 3), 'Replace', false);
 % the unselected blocks will have no 1-back stimuli
-zeroBackStimBlocksVoices = setdiff(remainingBlocksVoices,oneBackStimBlocksVoices);
+zeroBackStimBlocksVoices = setdiff(remainingBlocksVoices, oneBackStimBlocksVoices);
 % randomly select a third of the blocks to have 2 1-back stimuli for the objects%
-twoBackStimBlocksObjects = datasample(allBlocks,round(length(allBlocks)/3),'Replace',false);
+twoBackStimBlocksObjects = datasample(allBlocks, round(length(allBlocks) / 3), 'Replace', false);
 % from the remaining blocks, select another third to have one 1-back stimulus %
-remainingBlocksObjects = setdiff(allBlocks,twoBackStimBlocksObjects);
-oneBackStimBlocksObjects = datasample(remainingBlocksObjects,round(length(allBlocks)/3),'Replace',false);
+remainingBlocksObjects = setdiff(allBlocks, twoBackStimBlocksObjects);
+oneBackStimBlocksObjects = datasample(remainingBlocksObjects, round(length(allBlocks) / 3), 'Replace', false);
 % the unselected blocks will have no 1-back stimuli
-zeroBackStimBlocksObjects = setdiff(remainingBlocksObjects,oneBackStimBlocksObjects);
-
+zeroBackStimBlocksObjects = setdiff(remainingBlocksObjects, oneBackStimBlocksObjects);
 
 %% Presentation code
 
 % triggers
 cfg = struct;
-cfg.testingDevice = 'mri'; cfg.triggerKey = 's'; cfg.numTriggers = 1; cfg.win = mainWindow; cfg.text.color = textColor;
+cfg.testingDevice = 'mri';
+cfg.triggerKey = 's';
+cfg.numTriggers = 1;
+cfg.win = mainWindow;
+cfg.text.color = textColor;
 cfg.bids.MRI.RepetitionTime = 2.55;
 
 waitForTrigger(cfg);
@@ -164,285 +161,281 @@ waitForTrigger(cfg);
 % disable listening on the keyboard - needed for KbQueue
 ListenChar(-1);
 
-for rep=1:nReps
-    
+for rep = 1:nReps
+
     Screen('FillRect', mainWindow, bgColor);
     DrawFormattedText(mainWindow, '+', 'center', 'center', textColor);
     [~, ~, lastEventTime] = Screen('Flip', mainWindow);
-    
+
     % acquire some base line
-    if rep == 1 || rep==round((nReps/2+1))
-           dataFile = fopen(dataFileName, 'a');
-           fprintf(dataFile, baselineFormatString, GetSecs);
-           fclose(dataFile);
-           WaitSecs(10);
+    if rep == 1 || rep == round(nReps / 2 + 1)
+        dataFile = fopen(dataFileName, 'a');
+        fprintf(dataFile, baselineFormatString, GetSecs);
+        fclose(dataFile);
+        WaitSecs(10);
     end
 
-    
     % define an index, a, that knows which kind of block/rep it is for number of one back tasks %
-    if ismember(rep,zeroBackStimBlocksVoices)
+    if ismember(rep, zeroBackStimBlocksVoices)
         a = 0;
-    elseif ismember(rep,oneBackStimBlocksVoices)
+    elseif ismember(rep, oneBackStimBlocksVoices)
         a = 1;
-    elseif ismember(rep,twoBackStimBlocksVoices)
+    elseif ismember(rep, twoBackStimBlocksVoices)
         a = 2;
     end
     % a different index for objects
-    if ismember(rep,zeroBackStimBlocksObjects)
+    if ismember(rep, zeroBackStimBlocksObjects)
         w = 0;
-    elseif ismember(rep,oneBackStimBlocksObjects)
+    elseif ismember(rep, oneBackStimBlocksObjects)
         w = 1;
-    elseif ismember(rep,twoBackStimBlocksObjects)
+    elseif ismember(rep, twoBackStimBlocksObjects)
         w = 2;
     end
-    
+
     % and choose randomly which trial will be repeated in this block (if any)
-    backTrialsVoices = sort(randperm(20,a));
-    backTrialsObjects = sort(randperm(20,w));
-    
-        % pseudorandomization made based on emotion vector
-        [pseudoEmoVector,pseudoEmoIndex] = pseudorandptb(stimEmotion);
-        for ind=1:nStim
-            voices(pseudoEmoIndex(ind)).pseudorandindex = ind;
+    backTrialsVoices = sort(randperm(20, a));
+    backTrialsObjects = sort(randperm(20, w));
+
+    % pseudorandomization made based on emotion vector
+    [pseudoEmoVector, pseudoEmoIndex] = pseudorandptb(stimEmotion);
+    for ind = 1:nStim
+        voices(pseudoEmoIndex(ind)).pseudorandindex = ind;
+    end
+
+    % turn struct into table to reorder it
+    tablevoices = struct2table(voices);
+    pseudorandtablevoices = sortrows(tablevoices, 'pseudorandindex');
+
+    % convert into structure to use in the trial/ stimui loop below
+    pseudorandVoices = table2struct(pseudorandtablevoices);
+
+    % add 1-back trials to the structure
+    pseudorandVoicesBack = pseudorandVoices;
+    for b = 1:(length(stimEmotion) + a)
+        if a == 1
+            if b <= backTrialsVoices
+                pseudorandVoicesBack(b) = pseudorandVoices(b);
+
+            elseif b == backTrialsVoices + 1
+                pseudorandVoicesBack(b) = pseudorandVoices(backTrialsVoices);
+
+            elseif b > backTrialsVoices + 1
+                pseudorandVoicesBack(b) = pseudorandVoices(b - 1);
+
+            end
+
+        elseif a == 2
+            if b <= backTrialsVoices(1)
+                pseudorandVoicesBack(b) = pseudorandVoices(b);
+
+            elseif b == backTrialsVoices(1) + 1
+                pseudorandVoicesBack(b) = pseudorandVoices(backTrialsVoices(1));
+
+            elseif b == backTrialsVoices(2) + 2
+                pseudorandVoicesBack(b) = pseudorandVoices(backTrialsVoices(2));
+
+            elseif b > backTrialsVoices(1) + 1 && b < backTrialsVoices(2) + 2
+                pseudorandVoicesBack(b) = pseudorandVoices(b - 1);
+
+            elseif b > backTrialsVoices(2) + 2
+                pseudorandVoicesBack(b) = pseudorandVoices(b - 2);
+
+            end
         end
 
-        % turn struct into table to reorder it
-        tablevoices = struct2table(voices);
-        pseudorandtablevoices = sortrows(tablevoices,'pseudorandindex');
+    end
 
-        % convert into structure to use in the trial/ stimui loop below
-        pseudorandVoices = table2struct(pseudorandtablevoices);
-        
-        % add 1-back trials to the structure
-            pseudorandVoicesBack = pseudorandVoices;
-            for b=1:(length(stimEmotion)+a)
-                if a == 1
-                    if b <= backTrialsVoices
-                    pseudorandVoicesBack(b) = pseudorandVoices(b);
+    % shuffle object structure (pseudorand needed based on some feature?)%
+    randObjects = Shuffle(objects);
+    % add 1-back trials to the structure
+    randObjectsBack = randObjects;
+    for b = 1:(length(stimEmotion) + w)
+        if w == 1
+            if b <= backTrialsObjects
+                randObjectsBack(b) = objects(b);
 
-                    elseif b == backTrialsVoices+1
-                    pseudorandVoicesBack(b) = pseudorandVoices(backTrialsVoices);
+            elseif b == backTrialsObjects + 1
+                randObjectsBack(b) = objects(backTrialsObjects);
 
-                    elseif b > backTrialsVoices+1
-                    pseudorandVoicesBack(b) = pseudorandVoices(b-1);
-
-                    end
-
-                elseif a == 2
-                    if b <= backTrialsVoices(1)
-                    pseudorandVoicesBack(b) = pseudorandVoices(b);
-
-                    elseif b == backTrialsVoices(1)+1
-                    pseudorandVoicesBack(b) = pseudorandVoices(backTrialsVoices(1));
-
-                    elseif b == backTrialsVoices(2)+2
-                    pseudorandVoicesBack(b) = pseudorandVoices(backTrialsVoices(2));
-
-                    elseif b > backTrialsVoices(1)+1 && b < backTrialsVoices(2)+2
-                    pseudorandVoicesBack(b) = pseudorandVoices(b-1);
-
-                    elseif b > backTrialsVoices(2)+2
-                    pseudorandVoicesBack(b) = pseudorandVoices(b-2);
-
-                    end
-                end
+            elseif b > backTrialsObjects + 1
+                randObjectsBack(b) = objects(b - 1);
 
             end
-    
-         % shuffle object structure (pseudorand needed based on some feature?)%
-         randObjects = Shuffle(objects);
-         % add 1-back trials to the structure
-         randObjectsBack = randObjects;
-         for b=1:(length(stimEmotion)+w)
-                if w == 1
-                    if b <= backTrialsObjects
-                    randObjectsBack(b) = objects(b);
 
-                    elseif b == backTrialsObjects+1
-                    randObjectsBack(b) = objects(backTrialsObjects);
+        elseif w == 2
+            if b <= backTrialsObjects(1)
+                randObjectsBack(b) = objects(b);
 
-                    elseif b > backTrialsObjects+1
-                    randObjectsBack(b) = objects(b-1);
+            elseif b == backTrialsObjects(1) + 1
+                randObjectsBack(b) = objects(backTrialsObjects(1));
 
-                    end
+            elseif b == backTrialsObjects(2) + 2
+                randObjectsBack(b) = objects(backTrialsObjects(2));
 
-                elseif w == 2
-                    if b <= backTrialsObjects(1)
-                    randObjectsBack(b) = objects(b);
+            elseif b > backTrialsObjects(1) + 1 && b < backTrialsObjects(2) + 2
+                randObjectsBack(b) = objects(b - 1);
 
-                    elseif b == backTrialsObjects(1)+1
-                    randObjectsBack(b) = objects(backTrialsObjects(1));
+            elseif b > backTrialsObjects(2) + 2
+                randObjectsBack(b) = objects(b - 2);
 
-                    elseif b == backTrialsObjects(2)+2
-                    randObjectsBack(b) = objects(backTrialsObjects(2));
-
-                    elseif b > backTrialsObjects(1)+1 && b < backTrialsObjects(2)+2
-                    randObjectsBack(b) = objects(b-1);
-
-                    elseif b > backTrialsObjects(2)+2
-                    randObjectsBack(b) = objects(b-2);
-
-                    end
-                end
-
-         end
-    
-    
-        % stimuli presentation loop
-        for trial=1:nStim+a
-            
-            % fixation cross
-            DrawFormattedText(mainWindow, '+', 'center', 'center', textColor);
-            Screen('Flip', mainWindow);
-
-            % start queuing for triggers and subject's keypresses (flush previous queue) %
-            KbQueue('flush');
-            KbQueue('start', {'s','c'});
-
-
-            if pseudorandVoicesBack(trial).nrchannels < 2
-                wavedata = [pseudorandVoicesBack(trial).wavedata ; pseudorandVoicesBack(trial).wavedata];
-                nrchannels = 2;
             end
-
-            try
-                % Try with the 'freq'uency we wanted:
-                pahandle = PsychPortAudio('Open', [], [], 0, freq, nrchannels);
-            catch
-                    % Failed. Retry with default frequency as suggested by device:
-
-                psychlasterror('reset');
-                pahandle = PsychPortAudio('Open', [], [], 0, [], nrchannels);
-            end
-
-            % Fill the audio playback buffer with the audio data 'wavedata':
-            PsychPortAudio('FillBuffer', pahandle, wavedata);
-
-            % Start audio playback for 'repetitions' repetitions of the sound data,
-            % start it immediately (0) and wait for the playback to start, return onset
-            % timestamp.
-            stimStart = GetSecs;
-            PsychPortAudio('Start', pahandle, 1, 0, 1);
-
-
-            % Stay in a little loop for the file duration:        
-            t1 = 0;
-            while t1 < fileDuration
-                [keyIsDown, time, key] = KbCheck;
-
-                %     if keyIsDown
-                %         break
-                %     end
-
-                t2 = GetSecs;
-                t1 = t2 - stimStart;            
-            end
-
-            % Stop playback:
-            PsychPortAudio('Stop', pahandle);
-
-            % Close the audio device:
-            PsychPortAudio('Close', pahandle);
-
-            stimEnd = GetSecs;
-            Screen('Flip', mainWindow, stimEnd+ISI);
-
-            %save timestamps to output file
-            pressCodeTime = KbQueue('stop', expStart);
-            howManyKeyInputs = size(pressCodeTime);                    
-            dataFile = fopen(dataFileName, 'a');
-            for p = 1:howManyKeyInputs(2)
-            fprintf(dataFile, keypressFormatString, pressCodeTime(1,p), KbName(pressCodeTime(1,p)), pressCodeTime(2,p));
-            end
-            fprintf(dataFile, formatString, rep, trial, num2str(pseudorandVoicesBack(trial).emotion), num2str(pseudorandVoicesBack(trial).actor), GetSecs-stimEnd, stimEnd-stimStart, stimStart);
-            fclose(dataFile);
-
         end
 
-        % stimuli presentation loop for objects
-        for trial=1:nStim+w
-            
-            % fixation cross
-            DrawFormattedText(mainWindow, '+', 'center', 'center', textColor);
-            Screen('Flip', mainWindow);
+    end
 
-            % start queuing for triggers and subject's keypresses (flush previous queue) %
-            KbQueue('flush');
-            KbQueue('start', {'s','c'});
+    % stimuli presentation loop
+    for trial = 1:nStim + a
 
-            % audio presentation
-            if randObjectsBack(trial).nrchannels < 2
-                wavedata = [randObjectsBack(trial).wavedata ; randObjectsBack(trial).wavedata];
-                nrchannels = 2;
-            end
+        % fixation cross
+        DrawFormattedText(mainWindow, '+', 'center', 'center', textColor);
+        Screen('Flip', mainWindow);
 
-            try
-                % Try with the 'freq'uency we wanted:
-                pahandle = PsychPortAudio('Open', [], [], 0, freq, nrchannels);
-            catch
-                    % Failed. Retry with default frequency as suggested by device:
+        % start queuing for triggers and subject's keypresses (flush previous queue) %
+        KbQueue('flush');
+        KbQueue('start', {'s', 'c'});
 
-                psychlasterror('reset');
-                pahandle = PsychPortAudio('Open', [], [], 0, [], nrchannels);
-            end
+        if pseudorandVoicesBack(trial).nrchannels < 2
+            wavedata = [pseudorandVoicesBack(trial).wavedata; pseudorandVoicesBack(trial).wavedata];
+            nrchannels = 2;
+        end
 
-            % Fill the audio playback buffer with the audio data 'wavedata':
-            PsychPortAudio('FillBuffer', pahandle, wavedata);
+        try
+            % Try with the 'freq'uency we wanted:
+            pahandle = PsychPortAudio('Open', [], [], 0, freq, nrchannels);
+        catch
+            % Failed. Retry with default frequency as suggested by device:
 
-            % Start audio playback for 'repetitions' repetitions of the sound data,
-            % start it immediately (0) and wait for the playback to start, return onset
-            % timestamp.
-            stimStart = GetSecs;
-            PsychPortAudio('Start', pahandle, 1, 0, 1);
+            psychlasterror('reset');
+            pahandle = PsychPortAudio('Open', [], [], 0, [], nrchannels);
+        end
 
-            % Stay in a little loop for the file duration:        
-            t1 = 0;
-            while t1 < fileDuration
-                [keyIsDown, time, key] = KbCheck;
+        % Fill the audio playback buffer with the audio data 'wavedata':
+        PsychPortAudio('FillBuffer', pahandle, wavedata);
 
-                %     if keyIsDown
-                %         break
-                %     end
+        % Start audio playback for 'repetitions' repetitions of the sound data,
+        % start it immediately (0) and wait for the playback to start, return onset
+        % timestamp.
+        stimStart = GetSecs;
+        PsychPortAudio('Start', pahandle, 1, 0, 1);
 
-                t2 = GetSecs;
-                t1 = t2 - stimStart;            
-            end
+        % Stay in a little loop for the file duration:
+        t1 = 0;
+        while t1 < fileDuration
+            [keyIsDown, time, key] = KbCheck;
 
-            % Stop playback:
-            PsychPortAudio('Stop', pahandle);
+            %     if keyIsDown
+            %         break
+            %     end
 
-            % Close the audio device:
-            PsychPortAudio('Close', pahandle);
+            t2 = GetSecs;
+            t1 = t2 - stimStart;
+        end
 
-            stimEnd = GetSecs;
-            Screen('Flip', mainWindow, stimEnd+ISI);
+        % Stop playback:
+        PsychPortAudio('Stop', pahandle);
 
-            %save timestamps to output file
-            pressCodeTime = KbQueue('stop', expStart);
-            howManyKeyInputs = size(pressCodeTime);                    
-            dataFile = fopen(dataFileName, 'a');
-            for p = 1:howManyKeyInputs(2)
-            fprintf(dataFile, keypressFormatString, pressCodeTime(1,p), KbName(pressCodeTime(1,p)), pressCodeTime(2,p));
-            end
-            fprintf(dataFile, formatString, rep, trial, '0', randObjectsBack(trial).stimulusname, GetSecs-stimEnd, stimEnd-stimStart, stimStart);
-            fclose(dataFile);
+        % Close the audio device:
+        PsychPortAudio('Close', pahandle);
 
-        end   
-        
-             % more baseline
-            if rep == nReps
-                dataFile = fopen(dataFileName, 'a');
-                fprintf(dataFile, baselineFormatString, GetSecs);
-                fclose(dataFile);
-                WaitSecs(10);
-            end
+        stimEnd = GetSecs;
+        Screen('Flip', mainWindow, stimEnd + ISI);
+
+        % save timestamps to output file
+        pressCodeTime = KbQueue('stop', expStart);
+        howManyKeyInputs = size(pressCodeTime);
+        dataFile = fopen(dataFileName, 'a');
+        for p = 1:howManyKeyInputs(2)
+            fprintf(dataFile, keypressFormatString, pressCodeTime(1, p), KbName(pressCodeTime(1, p)), pressCodeTime(2, p));
+        end
+        fprintf(dataFile, formatString, rep, trial, num2str(pseudorandVoicesBack(trial).emotion), num2str(pseudorandVoicesBack(trial).actor), GetSecs - stimEnd, stimEnd - stimStart, stimStart);
+        fclose(dataFile);
+
+    end
+
+    % stimuli presentation loop for objects
+    for trial = 1:nStim + w
+
+        % fixation cross
+        DrawFormattedText(mainWindow, '+', 'center', 'center', textColor);
+        Screen('Flip', mainWindow);
+
+        % start queuing for triggers and subject's keypresses (flush previous queue) %
+        KbQueue('flush');
+        KbQueue('start', {'s', 'c'});
+
+        % audio presentation
+        if randObjectsBack(trial).nrchannels < 2
+            wavedata = [randObjectsBack(trial).wavedata; randObjectsBack(trial).wavedata];
+            nrchannels = 2;
+        end
+
+        try
+            % Try with the 'freq'uency we wanted:
+            pahandle = PsychPortAudio('Open', [], [], 0, freq, nrchannels);
+        catch
+            % Failed. Retry with default frequency as suggested by device:
+
+            psychlasterror('reset');
+            pahandle = PsychPortAudio('Open', [], [], 0, [], nrchannels);
+        end
+
+        % Fill the audio playback buffer with the audio data 'wavedata':
+        PsychPortAudio('FillBuffer', pahandle, wavedata);
+
+        % Start audio playback for 'repetitions' repetitions of the sound data,
+        % start it immediately (0) and wait for the playback to start, return onset
+        % timestamp.
+        stimStart = GetSecs;
+        PsychPortAudio('Start', pahandle, 1, 0, 1);
+
+        % Stay in a little loop for the file duration:
+        t1 = 0;
+        while t1 < fileDuration
+            [keyIsDown, time, key] = KbCheck;
+
+            %     if keyIsDown
+            %         break
+            %     end
+
+            t2 = GetSecs;
+            t1 = t2 - stimStart;
+        end
+
+        % Stop playback:
+        PsychPortAudio('Stop', pahandle);
+
+        % Close the audio device:
+        PsychPortAudio('Close', pahandle);
+
+        stimEnd = GetSecs;
+        Screen('Flip', mainWindow, stimEnd + ISI);
+
+        % save timestamps to output file
+        pressCodeTime = KbQueue('stop', expStart);
+        howManyKeyInputs = size(pressCodeTime);
+        dataFile = fopen(dataFileName, 'a');
+        for p = 1:howManyKeyInputs(2)
+            fprintf(dataFile, keypressFormatString, pressCodeTime(1, p), KbName(pressCodeTime(1, p)), pressCodeTime(2, p));
+        end
+        fprintf(dataFile, formatString, rep, trial, '0', randObjectsBack(trial).stimulusname, GetSecs - stimEnd, stimEnd - stimStart, stimStart);
+        fclose(dataFile);
+
+    end
+
+    % more baseline
+    if rep == nReps
+        dataFile = fopen(dataFileName, 'a');
+        fprintf(dataFile, baselineFormatString, GetSecs);
+        fclose(dataFile);
+        WaitSecs(10);
+    end
 end
 
 DrawFormattedText(mainWindow, 'end of localizer :)', 'center', 'center', textColor);
 Screen('Flip', mainWindow);
 expEnd = GetSecs;
-disp('Voice localizer duration:')
-disp((expEnd-expStart)/60);
+disp('Voice localizer duration:');
+disp((expEnd - expStart) / 60);
 waitForKb('space');
 ListenChar(0);
 ShowCursor;
