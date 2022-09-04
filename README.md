@@ -1,2 +1,3 @@
-# combiEmo
-this is the repo with the stimulation code for my fMRI experiment on combined face and voice emotion perception
+# Emotion localizer
+
+Stimulation code for my fMRI experiment for face and voice emotion localizer.

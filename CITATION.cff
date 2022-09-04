@@ -1,0 +1,42 @@
+cff-version: 1.2.0
+
+title: "emotion localizer"
+
+version: 0.1.0
+
+abstract: An fMRI localizer for facial and vocal emotions using psychtoolbox.
+
+message: "If you use this software, please cite it as below."
+
+repository-code: "https://github.com/cpp-lln-lab/emotion_localizer"
+
+# identifiers:
+#   - description: This is the collection of archived snapshots of all releases of CPP SPM
+#     type: doi
+#     value: "10.5281/zenodo.3554331"
+
+contact:
+  - affiliation: "Université catholique de Louvain"
+    email: remi.gau@uclouvain.be
+    family-names: Gau
+    given-names: Rémi
+
+authors:
+- family-names: "Gau"
+  given-names: "Rémi"
+  orcid: "https://orcid.org/0000-0002-1535-9767"
+  affiliation: "Université catholique de Louvain"
+
+- family-names: "Falagiarda"
+  given-names: "Federica"
+  orcid: "https://orcid.org/0000-0001-7844-1605"
+  affiliation: "Université catholique de Louvain"
+
+license: GPL-3.0
+
+keywords:
+  - emotion
+  - localizer
+  - fMRI
+  - psychtoolbox
+  - MATLAB
