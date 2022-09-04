@@ -1,0 +1,29 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "fedefalag",
+      "name": "Fede F.",
+      "avatar_url": "https://avatars.githubusercontent.com/u/50373329?v=4",
+      "profile": "https://github.com/fedefalag",
+      "contributions": [
+        "code",
+        "ideas",
+        "content",
+        "test",
+        "userTesting",
+        "data"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "emotion_localizer",
+  "projectOwner": "cpp-lln-lab",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
