@@ -1,22 +1,52 @@
-*DS_Store
+# General
+.DS_Store
+*.log
+.vscode
 
-*.m~
-*octave-workspace
-
-# exclude content of logfiles folders
-*/data/*
-*/logfiles/*
-*/*/*/logfiles/*
-*.tsv
-*.mat
-*.txt
+# stimuli
+__MACOSX
+tmp.zip
 *.wav
 *.png
+*.mat
+*.zip
 
-# exclude content of stimuli folders
-auditory_stim/
-visual_stim/
-data/
-**/auditory_stim
-**/visual_stim
-**/data
+# data
+*.tsv
+*.json
+
+## MATLAB / OCTAVE gitignore template
+
+# From : https://github.com/github/gitignore/blob/master/Global/MATLAB.gitignore
+
+# Windows default autosave extension
+*.asv
+
+# OSX / *nix default autosave extension
+*.m~
+
+# Compiled MEX binaries (all platforms)
+*.mex*
+
+# Packaged app and toolbox files
+*.mlappinstall
+*.mltbx
+
+# Generated helpsearch folders
+helpsearch*/
+
+# Simulink code generation folders
+slprj/
+sccprj/
+
+# Matlab code generation folders
+codegen/
+
+# Simulink autosave extension
+*.autosave
+
+# Simulink cache files
+*.slxc
+
+# Octave session info
+octave-workspace

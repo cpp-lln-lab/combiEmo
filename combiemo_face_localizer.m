@@ -333,84 +333,18 @@ for rep = 1:nReps
     tablefaces = struct2table(faces);
     pseudorandtablefaces = sortrows(tablefaces, 'pseudorandindex');
 
-    % convert back into structure et voilà, 
+    % convert back into structure et voilà,
     % you have a pseudorandomized structure to use in the trial/ stimui loop below
     pseudorandFaces = table2struct(pseudorandtablefaces);
 
     % add 1-back trials to the structure
-    pseudorandFacesBack = pseudorandFaces;
-    for b = 1:(length(stimEmotion) + a)
-        % a is the number of back trials
-        if a == 1
-            if b <= backTrialsFaces
-                pseudorandFacesBack(b) = pseudorandFaces(b);
-
-            elseif b == backTrialsFaces + 1
-                pseudorandFacesBack(b) = pseudorandFaces(backTrialsFaces);
-
-            elseif b > backTrialsFaces + 1
-                pseudorandFacesBack(b) = pseudorandFaces(b - 1);
-
-            end
-
-        elseif a == 2
-            if b <= backTrialsFaces(1)
-                pseudorandFacesBack(b) = pseudorandFaces(b);
-
-            elseif b == backTrialsFaces(1) + 1
-                pseudorandFacesBack(b) = pseudorandFaces(backTrialsFaces(1));
-
-            elseif b == backTrialsFaces(2) + 2
-                pseudorandFacesBack(b) = pseudorandFaces(backTrialsFaces(2));
-
-            elseif b > backTrialsFaces(1) + 1 && b < backTrialsFaces(2) + 2
-                pseudorandFacesBack(b) = pseudorandFaces(b - 1);
-
-            elseif b > backTrialsFaces(2) + 2
-                pseudorandFacesBack(b) = pseudorandFaces(b - 2);
-
-            end
-        end
-
-    end
+    [pseudorandFacesBack] = setOneBackTrials(pseudorandFaces, a, backTrialsFaces);
 
     % shuffle object structure (pseudorand needed based on some feature?)%
     randObjects = Shuffle(objects);
+
     % add 1-back trials to the structure
-    randObjectsBack = randObjects;
-    for b = 1:(length(stimEmotion) + w)
-        if w == 1
-            if b <= backTrialsObjects
-                randObjectsBack(b) = randObjects(b);
-
-            elseif b == backTrialsObjects + 1
-                randObjectsBack(b) = randObjects(backTrialsObjects);
-
-            elseif b > backTrialsObjects + 1
-                randObjectsBack(b) = randObjects(b - 1);
-
-            end
-
-        elseif w == 2
-            if b <= backTrialsObjects(1)
-                randObjectsBack(b) = randObjects(b);
-
-            elseif b == backTrialsObjects(1) + 1
-                randObjectsBack(b) = randObjects(backTrialsObjects(1));
-
-            elseif b == backTrialsObjects(2) + 2
-                randObjectsBack(b) = randObjects(backTrialsObjects(2));
-
-            elseif b > backTrialsObjects(1) + 1 && b < backTrialsObjects(2) + 2
-                randObjectsBack(b) = randObjects(b - 1);
-
-            elseif b > backTrialsObjects(2) + 2
-                randObjectsBack(b) = randObjects(b - 2);
-
-            end
-        end
-
-    end
+    [randObjectsBack] = setOneBackTrials(randObjects, w, backTrialsFaces);
 
     % trial loop for faces blocks
     for trial = 1:nStim + a

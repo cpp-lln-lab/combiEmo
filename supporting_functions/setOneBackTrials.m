@@ -1,36 +1,36 @@
-function [pseudorandFacesBack] = setOneBackTrials(pseudorandFaces, a, backTrialsFaces)
+function [pseudorandBack] = setOneBackTrials(pseudorand, a, backTrials)
 
-    pseudorandFacesBack = pseudorandFaces;
+    pseudorandBack = pseudorand;
 
-    for b = 1:(length(pseudorandFaces.stimName) + a)
+    for b = 1:(length(pseudorand.stimName) + a)
         % a is the number of back trials
         if a == 1
-            if b <= backTrialsFaces
-                pseudorandFacesBack(b) = pseudorandFaces(b);
+            if b <= backTrials
+                pseudorandBack(b) = pseudorand(b);
 
-            elseif b == backTrialsFaces + 1
-                pseudorandFacesBack(b) = pseudorandFaces(backTrialsFaces);
+            elseif b == backTrials + 1
+                pseudorandBack(b) = pseudorand(backTrials);
 
-            elseif b > backTrialsFaces + 1
-                pseudorandFacesBack(b) = pseudorandFaces(b - 1);
+            elseif b > backTrials + 1
+                pseudorandBack(b) = pseudorand(b - 1);
 
             end
 
         elseif a == 2
-            if b <= backTrialsFaces(1)
-                pseudorandFacesBack(b) = pseudorandFaces(b);
+            if b <= backTrials(1)
+                pseudorandBack(b) = pseudorand(b);
 
-            elseif b == backTrialsFaces(1) + 1
-                pseudorandFacesBack(b) = pseudorandFaces(backTrialsFaces(1));
+            elseif b == backTrials(1) + 1
+                pseudorandBack(b) = pseudorand(backTrials(1));
 
-            elseif b == backTrialsFaces(2) + 2
-                pseudorandFacesBack(b) = pseudorandFaces(backTrialsFaces(2));
+            elseif b == backTrials(2) + 2
+                pseudorandBack(b) = pseudorand(backTrials(2));
 
-            elseif b > backTrialsFaces(1) + 1 && b < backTrialsFaces(2) + 2
-                pseudorandFacesBack(b) = pseudorandFaces(b - 1);
+            elseif b > backTrials(1) + 1 && b < backTrials(2) + 2
+                pseudorandBack(b) = pseudorand(b - 1);
 
-            elseif b > backTrialsFaces(2) + 2
-                pseudorandFacesBack(b) = pseudorandFaces(b - 2);
+            elseif b > backTrials(2) + 2
+                pseudorandBack(b) = pseudorand(b - 2);
 
             end
         end
