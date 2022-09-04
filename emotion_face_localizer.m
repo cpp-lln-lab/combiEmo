@@ -55,7 +55,6 @@ AssertOpenGL;
 % of 0 runs these tests, and a value of 1 inhibits them. This
 % should always be set to 0 for actual experiments
 Screen('Preference', 'SkipSyncTests', 0);
-% Screen('Preference', 'SkipSyncTests', 2);
 
 Screen('Preference', 'ConserveVRAM', 4096);
 
@@ -78,10 +77,6 @@ practiceResponseDur = 5 - interFrameInterval / 5;
 nFrames = 30;
 videoFrameRate = 29.97;
 frameDuration = 1 / videoFrameRate - interFrameInterval / 5;
-% create a distribution to draw random jitters % No jitter needed atm
-% minJitter=-0.25;
-% maxJitter=0.25;
-% jitterDistribution=create_jitter(minJitter,maxJitter);
 
 % get width and height of the screen
 screenVector = Screen('Screens');
@@ -229,7 +224,6 @@ myObjectsStructArray = {candlesmallStruct, carrouselStruct, coffeeStruct, discsS
 
 %% create the structures with all the stimuli and corollary info
 nStim = 20; % per block
-% stimNameFaces = {'V27ne ','V27di ','V27fe ','V27ha ','V27sa ','V30ne ','V30di ','V30fe ','V30ha ','V30sa ','V32ne ','V32di ','V32fe ','V32ha ','V32sa ','V33ne ','V33di ','V33fe ','V33ha ','V33sa '};
 stimEmotion = repmat(1:5, 1, 4);
 stimActor = [repmat(27, 1, 5), repmat(30, 1, 5), repmat(32, 1, 5), repmat(33, 1, 5)];
 blockTypeFaces = 1; % 1 for faces, 2 for objects

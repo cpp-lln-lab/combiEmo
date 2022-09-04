@@ -73,10 +73,6 @@ msInterFrameInterval = interFrameInterval * 1000; % in ms
 % timings in my stimuli presentation
 fileDuration = 1 - interFrameInterval / 3;
 ISI = 0.1 - interFrameInterval / 3;
-% create a distribution to draw random jitters
-% minJitter=-0.25;
-% maxJitter=0.25;
-% jitterDistribution=create_jitter(minJitter,maxJitter);
 
 % get width and height of the screen
 screenVector = Screen('Screens');

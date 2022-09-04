@@ -1,3 +1,4 @@
+% (C) Copyright 2022 Remi Gau
 % Clear all the previous stuff
 clear;
 clc;

@@ -2,6 +2,7 @@ function initEnv()
     % initialize environment
     % checks that all the required libraries are installed
     % adds them to the path
+    % (C) Copyright 2022 Remi Gau
 
     octaveVersion = '4.0.3';
     matlabVersion = '8.6.0';

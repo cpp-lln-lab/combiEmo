@@ -39,6 +39,15 @@ function [cfg] = setConfiguration()
     % Number of seconds after the end all the stimuli before ending the run
     cfg.timing.endDelay = 2;
 
+    % Task parameters
+    cfg.bids.MRI.TaskDescription = ['One-back task.', ...
+                                    'The participant is asked to press a button, ', ...
+                                    'when he/she sees a repeated stimulus.', ...
+                                    'This is to force the participant to attend stimulus ', ...
+                                    'that is presented.'];
+    cfg.bids.MRI.CogAtlasID = 'https://www.cognitiveatlas.org/task/id/tsk_4a57abb949bcd/';
+    cfg.bids.MRI.CogPOID = 'http://www.wiki.cogpo.org/index.php?title=N-back_Paradigm';
+
 end
 
 function cfg = setKeyboards(cfg)
