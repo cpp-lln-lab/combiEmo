@@ -82,4 +82,6 @@ function cfg = setMonitor(cfg)
         cfg.screen.monitorDistance = 170;
     end
 
+    cfg.text.size = 28;
+
 end

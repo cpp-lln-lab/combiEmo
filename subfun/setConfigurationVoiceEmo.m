@@ -8,6 +8,7 @@ function [cfg] = setConfigurationVoiceEmo()
     cfg.audio.channels = 2;
 
     %% Task(s)
+    cfg.task.name = 'emotionLocalizerVocal';
 
     % Instruction
     cfg.task.instruction = 'TACHE\n Appuyez quand une syllabe est repetee deux fois d''affilee';
