@@ -1,6 +1,5 @@
-%%% Face Localizer for the CombiEmo Exp %%%
-
 % (C) Copyright 2020 Federica Falagiarda
+%%% Face Localizer for the CombiEmo Exp %%%
 
 expName = 'face_localizer_combiemo';
 expStart = GetSecs;
@@ -175,7 +174,9 @@ Sa33Struct = struct;
 Sa33Struct = buildFramesStruct(mainWindow, Sa33Struct, nFrames, frameDuration, allFrameNamesFaces(:, 20), faceFramePath);
 
 % put all structures together in one array that will be embedded in another structure %
-myFacesStructArray = {Ne27Struct, Di27Struct, Fe27Struct, Ha27Struct, Sa27Struct, Ne30Struct, Di30Struct, Fe30Struct, Ha30Struct, Sa30Struct, Ne32Struct, Di32Struct, Fe32Struct, Ha32Struct, Sa32Struct, Ne33Struct, Di33Struct, Fe33Struct, Ha33Struct, Sa33Struct};
+myFacesStructArray = {Ne27Struct, Di27Struct, Fe27Struct, Ha27Struct, Sa27Struct, Ne30Struct, Di30Struct, Fe30Struct, ...
+                      Ha30Struct, Sa30Struct, Ne32Struct, Di32Struct, Fe32Struct, Ha32Struct, Sa32Struct, Ne33Struct, Di33Struct, Fe33Struct, ...
+                      Ha33Struct, Sa33Struct};
 
 % Preallocate and build one structure per object video too
 objectFramePath = '/visual_stim/object_frames/'; % where to find the object images
@@ -222,7 +223,9 @@ windmillsStruct = struct;
 windmillsStruct = buildFramesStruct(mainWindow, windmillsStruct, nFrames, frameDuration, allFrameNamesObjects(:, 20), objectFramePath);
 
 % put all structures together in an array
-myObjectsStructArray = {candlesmallStruct, carrouselStruct, coffeeStruct, discsStruct, fanceilingStruct, fireStruct, fireworksStruct, flagStruct, kettleStruct, leavesStruct, lpplayerStruct, rouletteStruct, sewingStruct, spinningtopStruct, tireStruct, toiletStruct, trafficlightStruct, waterStruct, waterfallsStruct, windmillsStruct};
+myObjectsStructArray = {candlesmallStruct, carrouselStruct, coffeeStruct, discsStruct, fanceilingStruct, fireStruct, ...
+                        fireworksStruct, flagStruct, kettleStruct, leavesStruct, lpplayerStruct, rouletteStruct, sewingStruct, spinningtopStruct, ...
+                        tireStruct, toiletStruct, trafficlightStruct, waterStruct, waterfallsStruct, windmillsStruct};
 
 %% create the structures with all the stimuli and corollary info
 nStim = 20; % per block
@@ -334,7 +337,7 @@ for rep = 1:nReps
     tablefaces = struct2table(faces);
     pseudorandtablefaces = sortrows(tablefaces, 'pseudorandindex');
 
-    % convert back into structure et voilà,
+    % convert back into structure et voila,
     % you have a pseudorandomized structure to use in the trial/ stimui loop below
     pseudorandFaces = table2struct(pseudorandtablefaces);
 

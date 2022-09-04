@@ -1,6 +1,5 @@
-%%% Voice Localizer for the CombiEmo Exp %%%
-
 % (C) Copyright 2020 Federica Falagiarda
+%%% Voice Localizer for the CombiEmo Exp %%%
 
 expName = 'voice_localizer_combiemo';
 expStart = GetSecs;
@@ -97,12 +96,16 @@ KbName('UnifyKeyNames');
 
 % build structure for all stimuli needed in this localizer
 %
-stimNameVoices = {'A27ne.wav', 'A27di.wav', 'A27fe.wav', 'A27ha.wav', 'A27sa.wav', 'A30ne.wav', 'A30di.wav', 'A30fe.wav', 'A30ha.wav', 'A30sa.wav', 'A32ne.wav', 'A32di.wav', 'A32fe.wav', 'A32ha.wav', 'A32sa.wav', 'A33ne.wav', 'A33di.wav', 'A33fe.wav', 'A33ha.wav', 'A33sa.wav'};
+stimNameVoices = {'A27ne.wav', 'A27di.wav', 'A27fe.wav', 'A27ha.wav', 'A27sa.wav', 'A30ne.wav', 'A30di.wav', ...
+                  'A30fe.wav', 'A30ha.wav', 'A30sa.wav', 'A32ne.wav', 'A32di.wav', 'A32fe.wav', 'A32ha.wav', 'A32sa.wav', 'A33ne.wav', ...
+                  'A33di.wav', 'A33fe.wav', 'A33ha.wav', 'A33sa.wav'};
 stimEmotion = repmat(1:5, 1, 4);
 stimActor = [repmat(27, 1, 5), repmat(30, 1, 5), repmat(32, 1, 5), repmat(33, 1, 5)];
 blockTypeVoices = 1; % 1 for voices, 2 for objects
 
-stimNameObjects = {'waterpour.wav', 'carignition.wav', 'mixing.wav', 'egg.wav', 'bikebell.wav', 'applause.wav', 'engine.wav', 'grinder.wav', 'sharpener.wav', 'opencan.wav', 'churchbell.wav', 'hairdryer.wav', 'keyboard.wav', 'phone.wav', 'river.wav', 'saw.wav', 'thunder.wav', 'toothbrush.wav', 'traffic.wav', 'wind.wav'};
+stimNameObjects = {'waterpour.wav', 'carignition.wav', 'mixing.wav', 'egg.wav', 'bikebell.wav', 'applause.wav', ...
+                   'engine.wav', 'grinder.wav', 'sharpener.wav', 'opencan.wav', 'churchbell.wav', 'hairdryer.wav', 'keyboard.wav', ...
+                   'phone.wav', 'river.wav', 'saw.wav', 'thunder.wav', 'toothbrush.wav', 'traffic.wav', 'wind.wav'};
 blockTypeObjects = 2;
 
 %% Build structures for stimuli presentation
