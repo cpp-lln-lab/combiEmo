@@ -10,10 +10,10 @@ message: "If you use this software, please cite it as below."
 
 repository-code: "https://github.com/cpp-lln-lab/emotion_localizer"
 
-# identifiers:
-#   - description: This is the collection of archived snapshots of all releases of CPP SPM
-#     type: doi
-#     value: "10.5281/zenodo.3554331"
+identifiers:
+  - description: This is the collection of archived snapshots of all releases of CPP SPM
+    type: doi
+    value: "10.5281/zenodo.7048285"
 
 contact:
   - affiliation: "Université catholique de Louvain"

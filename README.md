@@ -1,7 +1,8 @@
-# Emotion localizer
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7048286.svg)](https://doi.org/10.5281/zenodo.7048286)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
+# Emotion localizer
 
 Stimulation code for my fMRI experiment for face and voice emotion localizer.
 
