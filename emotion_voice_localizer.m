@@ -1,5 +1,6 @@
 %%% Voice Localizer for the CombiEmo Exp %%%
-% programmer: Federica Falagiarda 2020
+
+% (C) Copyright 2020 Federica Falagiarda
 
 expName = 'voice_localizer_combiemo';
 expStart = GetSecs;
