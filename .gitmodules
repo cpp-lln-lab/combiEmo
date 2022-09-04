@@ -6,3 +6,8 @@
 	path = lib/CPP_PTB
 	url = https://github.com/cpp-lln-lab/CPP_PTB.git
 	datalad-url = https://github.com/cpp-lln-lab/CPP_PTB.git
+[submodule "stimuli"]
+	path = stimuli
+	url = git@gin.g-node.org:/cpp-lln-lab/emotion_localizer_stimuli.git
+	datalad-id = 0aa37b07-3499-48ff-b89f-46353a57812c
+	datalad-url = git@gin.g-node.org:/cpp-lln-lab/emotion_localizer_stimuli.git
